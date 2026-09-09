@@ -1,15 +1,20 @@
-import 'package:hive_ce/hive.dart';
+import 'package:hive/hive.dart';
 import 'meal.dart';
 
 class MealRepository {
   final Box box;
-  MealRepository(this.box);
-  static const _key = 'meals_list';
+  final String userId;
+  MealRepository(this.box, this.userId);
+  late final String _key = 'meals_list_$userId';
 
   List<Meal> getAll() {
-    final list = box.get(_key) as List?;
-    if (list == null) return [];
-    return list.map((e) => Meal.fromJson(Map<String, dynamic>.from(e))).toList();
+    try {
+      final list = box.get(_key) as List?;
+      if (list == null) return [];
+      return list.map((e) => Meal.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<void> _saveAll(List<Meal> meals) async {

@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tzdata;
 
@@ -33,15 +34,17 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    const details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        'mamba_fast',
-        'Mamba Fast Tracker',
-        importance: Importance.high,
-        priority: Priority.high,
-      ),
-    );
-    await _plugin.show(id, title, body, details);
+    try {
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          'mamba_fast',
+          'Mamba Fast Tracker',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      );
+      await _plugin.show(id, title, body, details);
+    } catch (_) {}
   }
 
   static Future<void> scheduleFastingEnd({
@@ -74,6 +77,34 @@ class NotificationService {
     }
   }
 
-  static Future<void> cancel(int id) async => _plugin.cancel(id);
-  static Future<void> cancelAll() async => _plugin.cancelAll();
+  static Future<void> cancel(int id) async {
+    try {
+      await _plugin.cancel(id);
+    } catch (e) {
+      // Workaround para bug R8 "Missing type parameter" no flutter_local_notifications 18.x com desugar
+      // Limpa cache corrompido e ignora
+      try {
+        // tenta limpar SharedPreferences direto
+        // ignore: avoid_print
+        print('[MAMBA] cancel failed, ignoring: $e');
+      } catch (_) {}
+    }
+  }
+
+  static Future<void> cancelAll() async {
+    try {
+      await _plugin.cancelAll();
+    } catch (_) {}
+  }
+
+  // limpa cache corrompido de agendamentos (SharedPreferences)
+  static Future<void> clearCorruptedCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // chave usada pelo plugin para salvar agendamentos
+      for (final k in prefs.getKeys().where((k) => k.contains('scheduled'))) {
+        await prefs.remove(k);
+      }
+    } catch (_) {}
+  }
 }

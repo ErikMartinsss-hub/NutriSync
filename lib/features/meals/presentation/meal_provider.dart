@@ -1,15 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_ce/hive.dart';
+import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
+import '../../auth/presentation/auth_provider.dart';
 import '../data/meal.dart';
 import '../data/meal_repository.dart';
 
 final mealRepoProvider = Provider<MealRepository>((ref) {
   final box = Hive.box('mamba_box');
-  return MealRepository(box);
+  final auth = ref.watch(authProvider);
+  return MealRepository(box, auth.userId);
 });
 
-final mealsProvider = StateNotifierProvider<MealNotifier, List<Meal>>((ref) {
+final mealsProvider = StateNotifierProvider.autoDispose<MealNotifier, List<Meal>>((ref) {
   final repo = ref.watch(mealRepoProvider);
   return MealNotifier(repo);
 });
@@ -20,7 +22,7 @@ class MealNotifier extends StateNotifier<List<Meal>> {
 
   void _refresh() => state = repo.getAll();
 
-  Future<void> addMeal(String name, int calories, {DateTime? time}) async {
+  Future<void> addMeal(String name, int calories, {DateTime? time, String mealType = 'almoco'}) async {
     final now = time ?? DateTime.now();
     final meal = Meal(
       id: const Uuid().v4(),
@@ -28,12 +30,13 @@ class MealNotifier extends StateNotifier<List<Meal>> {
       calories: calories,
       timestampMs: now.millisecondsSinceEpoch,
       dateKey: Meal.dateKeyFrom(now),
+      mealType: mealType,
     );
     await repo.add(meal);
     _refresh();
   }
 
-  Future<void> updateMeal(String id, String name, int calories) async {
+  Future<void> updateMeal(String id, String name, int calories, {String? mealType}) async {
     final existing = state.firstWhere((m) => m.id == id);
     final updated = Meal(
       id: id,
@@ -41,6 +44,7 @@ class MealNotifier extends StateNotifier<List<Meal>> {
       calories: calories,
       timestampMs: existing.timestampMs,
       dateKey: existing.dateKey,
+      mealType: mealType ?? existing.mealType,
     );
     await repo.update(updated);
     _refresh();

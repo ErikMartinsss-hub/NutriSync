@@ -6,6 +6,7 @@ class Meal {
   final int calories;
   final int timestampMs;
   final String dateKey; // yyyy-MM-dd
+  final String mealType; // cafe, almoco, jantar, lanche
 
   Meal({
     required this.id,
@@ -13,6 +14,7 @@ class Meal {
     required this.calories,
     required this.timestampMs,
     required this.dateKey,
+    this.mealType = 'almoco',
   });
 
   DateTime get dateTime => DateTime.fromMillisecondsSinceEpoch(timestampMs);
@@ -24,6 +26,7 @@ class Meal {
         'calories': calories,
         'timestampMs': timestampMs,
         'dateKey': dateKey,
+        'mealType': mealType,
       };
 
   factory Meal.fromJson(Map j) => Meal(
@@ -32,6 +35,7 @@ class Meal {
         calories: j['calories'],
         timestampMs: j['timestampMs'],
         dateKey: j['dateKey'],
+        mealType: j['mealType'] ?? 'almoco',
       );
 
   static String dateKeyFrom(DateTime d) => DateFormat('yyyy-MM-dd').format(d);

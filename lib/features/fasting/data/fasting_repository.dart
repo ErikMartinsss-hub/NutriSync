@@ -1,19 +1,22 @@
-import 'package:hive_ce/hive.dart';
+import 'package:hive/hive.dart';
 import 'fasting_protocol.dart';
 import 'fasting_session.dart';
 
 class FastingRepository {
   final Box box;
-  FastingRepository(this.box);
+  final String userId;
+  FastingRepository(this.box, this.userId);
 
-  static const _currentKey = 'fasting_current';
-  static const _historyKey = 'fasting_history';
-  static const _protocolKey = 'fasting_protocol';
-  static const _customProtocolsKey = 'fasting_custom_protocols';
+  late final String _currentKey = 'fasting_current_$userId';
+  late final String _historyKey = 'fasting_history_$userId';
+  late final String _protocolKey = 'fasting_protocol_$userId';
+  late final String _customProtocolsKey = 'fasting_custom_protocols_$userId';
 
   FastingProtocol getSelectedProtocol() {
-    final j = box.get(_protocolKey);
-    if (j != null) return FastingProtocol.fromJson(Map<String, dynamic>.from(j));
+    try {
+      final j = box.get(_protocolKey);
+      if (j != null) return FastingProtocol.fromJson(Map<String, dynamic>.from(j as Map));
+    } catch (_) {}
     return FastingProtocol.predefined[1]; // 16:8 default
   }
 
@@ -22,9 +25,13 @@ class FastingRepository {
   }
 
   List<FastingProtocol> getCustomProtocols() {
-    final list = box.get(_customProtocolsKey) as List?;
-    if (list == null) return [];
-    return list.map((e) => FastingProtocol.fromJson(Map<String, dynamic>.from(e))).toList();
+    try {
+      final list = box.get(_customProtocolsKey) as List?;
+      if (list == null) return [];
+      return list.map((e) => FastingProtocol.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<void> addCustomProtocol(FastingProtocol p) async {
@@ -34,9 +41,13 @@ class FastingRepository {
   }
 
   FastingSession? getCurrentSession() {
-    final j = box.get(_currentKey);
-    if (j == null) return null;
-    return FastingSession.fromJson(Map<String, dynamic>.from(j));
+    try {
+      final j = box.get(_currentKey);
+      if (j == null) return null;
+      return FastingSession.fromJson(Map<String, dynamic>.from(j as Map));
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> saveCurrentSession(FastingSession? s) async {
@@ -48,9 +59,13 @@ class FastingRepository {
   }
 
   List<FastingSession> getHistory() {
-    final list = box.get(_historyKey) as List?;
-    if (list == null) return [];
-    return list.map((e) => FastingSession.fromJson(Map<String, dynamic>.from(e))).toList();
+    try {
+      final list = box.get(_historyKey) as List?;
+      if (list == null) return [];
+      return list.map((e) => FastingSession.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<void> addToHistory(FastingSession s) async {

@@ -1,18 +1,20 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_ce/hive.dart';
+import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/services/notification_service.dart';
+import '../../auth/presentation/auth_provider.dart';
 import '../data/fasting_protocol.dart';
 import '../data/fasting_repository.dart';
 import '../data/fasting_session.dart';
 
 final fastingRepoProvider = Provider<FastingRepository>((ref) {
   final box = Hive.box('mamba_box');
-  return FastingRepository(box);
+  final auth = ref.watch(authProvider);
+  return FastingRepository(box, auth.userId);
 });
 
-final fastingProvider = StateNotifierProvider<FastingNotifier, FastingState>((ref) {
+final fastingProvider = StateNotifierProvider.autoDispose<FastingNotifier, FastingState>((ref) {
   final repo = ref.watch(fastingRepoProvider);
   return FastingNotifier(repo);
 });
@@ -151,8 +153,12 @@ class FastingNotifier extends StateNotifier<FastingState> {
     final elapsed = c.elapsedSeconds(state.now);
     final paused = c.copyWith(status: FastingStatus.paused, elapsedSecondsOnPause: elapsed);
     await repo.saveCurrentSession(paused);
-    await NotificationService.cancel(c.id.hashCode);
-    state = state.copyWith(current: paused);
+    try { await NotificationService.cancel(c.id.hashCode); } catch (_) {}
+    // força rebuild imediato com now congelado para não continuar contando
+    state = state.copyWith(current: paused, now: DateTime.now());
+    // debug
+    // ignore: avoid_print
+    print('[MAMBA] pause: elapsed=$elapsed status=${paused.status}');
   }
 
   Future<void> resumeFasting() async {
@@ -162,14 +168,17 @@ class FastingNotifier extends StateNotifier<FastingState> {
     final newStart = now.millisecondsSinceEpoch - c.elapsedSecondsOnPause * 1000;
     final resumed = c.copyWith(status: FastingStatus.active, startTimeMs: newStart);
     await repo.saveCurrentSession(resumed);
-    state = state.copyWith(current: resumed);
+    state = state.copyWith(current: resumed, now: now);
     final remainingSec = resumed.durationSeconds - resumed.elapsedSeconds(now);
-    await NotificationService.scheduleFastingEnd(
-      id: resumed.id.hashCode,
-      title: 'Jejum concluído! 🎉',
-      body: 'Seu jejum ${resumed.protocolName} terminou.',
-      scheduledDate: now.add(Duration(seconds: remainingSec)),
-    );
+    try {
+      await NotificationService.scheduleFastingEnd(
+        id: resumed.id.hashCode,
+        title: 'Jejum concluído! 🎉',
+        body: 'Seu jejum ${resumed.protocolName} terminou.',
+        scheduledDate: now.add(Duration(seconds: remainingSec)),
+      );
+    } catch (_) {}
+    print('[MAMBA] resume: elapsedOnPause=${c.elapsedSecondsOnPause} newStart=$newStart');
   }
 
   Future<void> stopFasting({bool complete = false}) async {

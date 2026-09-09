@@ -9,6 +9,16 @@ import '../../meals/presentation/meal_provider.dart';
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
 
+  String _statusPt(FastingStatus s) {
+    switch (s) {
+      case FastingStatus.active: return 'Ativo';
+      case FastingStatus.paused: return 'Pausado';
+      case FastingStatus.completed: return 'Concluído';
+      case FastingStatus.cancelled: return 'Cancelado';
+      case FastingStatus.idle: return 'Inativo';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final fasting = ref.watch(fastingProvider);
@@ -36,7 +46,6 @@ class HistoryPage extends ConsumerWidget {
               itemBuilder: (_, i) {
                 final dateKey = sorted[i];
                 final d = DateFormat('yyyy-MM-dd').parse(dateKey);
-                final label = DateFormat('EEEE, dd MMM yyyy', 'pt_BR').format(d);
                 final dayMeals = meals.where((m) => m.dateKey == dateKey).toList();
                 final totalCal = dayMeals.fold<int>(0, (s, m) => s + m.calories);
                 final dayFasts = fasting.history.where((h) => DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(h.createdAtMs)) == dateKey).toList();
@@ -54,7 +63,7 @@ class HistoryPage extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ExpansionTile(
                     title: Text(DateFormat('dd/MM/yyyy').format(d), style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text('$totalCal kcal • ${(totalFastSec + curSec) ~/ 3600}h ${(totalFastSec + curSec) % 3600 ~/ 60}m jejum • ${dayMeals.length} refeições'),
+                    subtitle: Text('$totalCal kcal • ${(totalFastSec + curSec) ~/ 3600}h ${(totalFastSec + curSec) % 3600 ~/ 60}min jejum • ${dayMeals.length} refeições'),
                     children: [
                       if (dayFasts.isNotEmpty)
                         Padding(
@@ -71,7 +80,7 @@ class HistoryPage extends ConsumerWidget {
                                       size: 18,
                                     ),
                                     title: Text('${h.protocolName} — ${h.durationMinutes ~/ 60}h'),
-                                    subtitle: Text('${DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(h.startTimeMs))} • ${h.status.name}'),
+                                    subtitle: Text('${DateFormat('HH:mm', 'pt_BR').format(DateTime.fromMillisecondsSinceEpoch(h.startTimeMs))} • ${_statusPt(h.status)}'),
                                     trailing: Text('${(h.durationSeconds ~/ 60)} min'),
                                   )),
                             ],
