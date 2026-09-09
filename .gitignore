@@ -50,3 +50,6 @@ app.*.map.json
 android/build/
 android/.gradle/
 
+# Firebase config with API keys (not committed)
+android/app/google-services.json
+

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "SEU_PROJECT_NUMBER",
+    "project_id": "SEU_PROJECT_ID",
+    "storage_bucket": "SEU_PROJECT_ID.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:SEU_APP_ID:android:SEU_APP_HASH",
+        "android_client_info": {
+          "package_name": "com.mamba.nutrisync.mamba_fast_tracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "SEU_WEB_CLIENT_ID.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mamba.nutrisync.mamba_fast_tracker",
+            "certificate_hash": "SEU_SHA1"
+          }
+        },
+        {
+          "client_id": "SEU_IOS_CLIENT_ID.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSySEU_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "SEU_IOS_CLIENT_ID.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
