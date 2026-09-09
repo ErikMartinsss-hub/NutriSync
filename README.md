@@ -11,7 +11,7 @@ Stack: Flutter 3.47 + Dart 3.13 · Arquitetura: Clean + Riverpod · Persistencia
 ### Pre-requisitos
 - Flutter 3.22+ (`flutter doctor` deve passar no Android toolchain)
 - Android SDK 34+ / emulador ou device fisico
-- `google-services.json` do Firebase (projeto `nutrisync-18da1`) em `android/app/` — esse arquivo NAO esta no repositorio (contem chaves de API), pois fica em `.gitignore`. Use o template `android/app/google-services.json.example` como base, ou gere o seu no Firebase console.
+- `google-services.json` do Firebase (projeto `nutrisync-18da1`) em `android/app/` (nao versionado — fica no `.gitignore`, gere o seu no Firebase console)
 
 ### Rodar em debug
 ```bash
@@ -35,13 +35,6 @@ Nota sobre o build release nesta maquina: o AOT snapshotter do Flutter crasha ao
 ```bash
 flutter test
 ```
-
-### CI (GitHub Actions)
-O workflow em `.github/workflows/ci.yml` roda `flutter analyze` + `flutter test` e publida o APK. Como o `google-services.json` nao vai para o repositorio, o job de build espera um secret chamado `GOOGLE_SERVICES_JSON` (o arquivo em base64). Para configurar:
-```bash
-base64 -w0 android/app/google-services.json   # saida vira o valor do secret
-```
-Settings > Secrets and variables > Actions > New repository secret > `GOOGLE_SERVICES_JSON`.
 
 ---
 
