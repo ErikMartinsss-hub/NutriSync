@@ -33,11 +33,17 @@ flutter run
 ```bash
 flutter build apk --debug
 flutter build apk --release --target-platform android-arm64   # APK release
-flutter build appbundle                                      # AAB para Play Store
+flutter build appbundle --release --target-platform android-arm64   # AAB para Play Store
 ```
-Saida: `build/app/outputs/flutter-apk/app-release.apk`
+Saida: `build/app/outputs/flutter-apk/app-release.apk` e `build/app/outputs/bundle/release/app-release.aab`
 
-Nota sobre o build release nesta maquina: o AOT snapshotter do Flutter crasha ao compilar as 3 ABIs em paralelo (limitacao de memoria no Windows). O build com `--target-platform android-arm64` gera um APK funcional para a grande maioria dos celulares Android atuais.
+### Assinatura para Play Store
+- Gere o keystore uma vez e nunca committe: `android/app/upload-keystore.jks` (local) + `android/key.properties` (senha). Ambos estao no `.gitignore`.
+- Com o `android/key.properties` presente, todo build release assina com essa chave (`alias upload`). Sem o arquivo (ex.: CI), o build cai no debug signing automaticamente.
+- Backups recomendados: `Desktop/NUTRISYNC/upload-keystore.jks` e `key.properties`.
+- Play App Signing: ao subir o primeiro AAB, o Play Console cuida. Apos isso, registre o certificado de assinatura do Play no Firebase (Google Sign-In usa SHA-1).
+
+Nota sobre o build release nesta maquina: o AOT snapshotter do Flutter crasha ao compilar a ABI 32-bit (limitacao de memoria no Windows). O build com `--target-platform android-arm64` gera um APK/AAB funcional para a grande maioria dos celulares Android atuais (64-bit).
 
 ### Testes
 ```bash
@@ -208,7 +214,7 @@ Icone do app gerado com `flutter_launcher_icons` a partir de `assets/icon_foregr
 - **Firebase Auth com fallback local**: autenticacao real com Google Sign-In; se o aparelho estiver offline, o login demo via SharedPreferences evita travar o app. Em contra partida, nao ha recuperacao de senha no modo demo — aceitavel para o desafio.
 - **Hive em vez de Isar/Drift**: nivel de estabilidade alto no Windows e sem toolchain extra; as queries simples por `dateKey` cobrem o MVP.
 - **Timestamp absoluto + zonedSchedule**: sem foreground service (seria over-engineering para 3-4 dias); o timer continua correto mesmo com o processo encerrado pelo sistema.
-- **Build release arm64**: contorno para o crash do AOT snapshotter nas 3 ABIs em paralelo. Equivale ao `--split-per-abi` de uma ABI. Para distribuicao ampla, o AAB da Play Store compila por dispositivo e nao tem esse problema.
+- **Build release arm64**: contorno para o crash do AOT snapshotter na ABI 32-bit no Windows. Equivale ao `--split-per-abi` de uma ABI. Para distribuicao ampla, o AAB da Play Store compila por dispositivo e nao tem esse problema.
 - **Sem testes de widget/E2E**: a cobertura unitaria foca no core (timer e repositorios). Com mais tempo, o proximo passo e `integration_test` para o fluxo iniciar, pausar, encerrar e reabrir.
 
 ---
