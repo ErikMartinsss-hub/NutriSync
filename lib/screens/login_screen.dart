@@ -61,11 +61,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
     setState(() => _loading = true);
-    final authed = await BiometricService.authenticate();
-    if (!authed) {
+    final result = await BiometricService.authenticate();
+    if (!result.success) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Não foi possível usar a digital. Tente novamente.')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message ?? 'Não foi possível usar a digital. Tente novamente.')));
       }
       return;
     }
