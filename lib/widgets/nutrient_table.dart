@@ -10,8 +10,8 @@ class NutrientTable extends StatelessWidget {
         child: Column(children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.card))),
-            child: Row(children: const [
+            decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.card))),
+            child: Row(children: [
               Expanded(child: Text('Nutriente', style: AppText.label)),
               SizedBox(width: 60, child: Text('Total', style: AppText.label)),
               SizedBox(width: 60, child: Text('Meta', style: AppText.label)),

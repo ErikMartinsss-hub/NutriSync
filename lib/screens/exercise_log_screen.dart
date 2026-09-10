@@ -31,7 +31,7 @@ class _ExerciseLogScreenState extends ConsumerState<ExerciseLogScreen> {
     final kcal = _kcal(weight);
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: AppBar(backgroundColor: AppColors.bg, elevation: 0, leading: IconButton(icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textDark), onPressed: () => Navigator.pop(context)), title: const Text('Registrar Exercício', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textDark)), centerTitle: true),
+      appBar: AppBar(backgroundColor: AppColors.bg, elevation: 0, leading: IconButton(icon: Icon(Icons.arrow_back_rounded, color: AppColors.textDark), onPressed: () => Navigator.pop(context)), title: Text('Registrar Exercício', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textDark)), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

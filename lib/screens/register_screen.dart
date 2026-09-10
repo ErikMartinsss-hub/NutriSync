@@ -43,16 +43,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Container(
-          decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFFF5F7FA), Color(0xFFFFFFFF)])),
+          decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [AppColors.bg, AppColors.card])),
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Align(alignment: Alignment.centerLeft, child: IconButton(icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textDark), onPressed: () => Navigator.pop(context))),
+                Align(alignment: Alignment.centerLeft, child: IconButton(icon: Icon(Icons.arrow_back_rounded, color: AppColors.textDark), onPressed: () => Navigator.pop(context))),
                 const SizedBox(height: 4),
-                const Text('Criar Conta', textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                Text('Criar Conta', textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textDark)),
                 const SizedBox(height: 6),
-                const Text('Comece sua jornada saudável hoje', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Color(0xFF666666))),
+                Text('Comece sua jornada saudável hoje', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppColors.textMid)),
                 const SizedBox(height: 24),
                 Form(
                   key: _form,
@@ -81,12 +81,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ]),
                 ),
                 const SizedBox(height: 20),
-                Row(children: [const Expanded(child: Divider(color: AppColors.border)), Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Text('ou cadastrar com', style: AppText.small)), const Expanded(child: Divider(color: AppColors.border))]),
+                Row(children: [Expanded(child: Divider(color: AppColors.border)), Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Text('ou cadastrar com', style: AppText.small)), Expanded(child: Divider(color: AppColors.border))]),
                 const SizedBox(height: 16),
                 SizedBox(width: double.infinity, child: InkWell(onTap: _loginGoogle, child: _social('G', 'Google', const Color(0xFF4285F4)))),
                 const SizedBox(height: 24),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  const Text('Já tem uma conta? ', style: TextStyle(fontSize: 12, color: AppColors.textMid)),
+                  Text('Já tem uma conta? ', style: TextStyle(fontSize: 12, color: AppColors.textMid)),
                   GestureDetector(onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())), child: const Text('Faça login', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w700))),
                 ]),
                 const SizedBox(height: 12),
@@ -102,21 +102,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         validator: validator,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.textMid, fontSize: 13),
+          hintStyle: TextStyle(color: AppColors.textMid, fontSize: 13),
           prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
           suffixIcon: suffix,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppColors.card,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary.withOpacity(0.15))),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.border)),
           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.2)),
         ),
       );
 
   Widget _social(String letter, String label, Color col) => Container(
         height: 48,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: AppShadows.card, border: Border.all(color: AppColors.border)),
+        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), boxShadow: AppShadows.card, border: Border.all(color: AppColors.border)),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Container(width: 22, height: 22, decoration: BoxDecoration(color: col, shape: BoxShape.circle), child: Center(child: Text(letter, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12)))),
           const SizedBox(width: 8),

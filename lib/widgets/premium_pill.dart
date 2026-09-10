@@ -8,7 +8,7 @@ class PremiumPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(color: AppColors.premium, borderRadius: BorderRadius.circular(AppRadius.pill)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.workspace_premium_rounded, size: 14, color: AppColors.textDark),
+          Icon(Icons.workspace_premium_rounded, size: 14, color: AppColors.textDark),
           const SizedBox(width: 4),
           Text('Seja Premium', style: AppText.label.copyWith(color: AppColors.textDark, fontWeight: FontWeight.w700, fontSize: 11)),
         ]),

@@ -14,6 +14,7 @@ import '../features/fasting/data/fasting_session.dart';
 import '../features/fasting/presentation/fasting_provider.dart';
 import '../features/profile/presentation/profile_provider.dart';
 import '../features/exercise/presentation/exercise_provider.dart';
+import '../core/theme/theme_provider.dart';
 import '../screens/onboarding_screen.dart';
 import '../screens/exercise_log_screen.dart';
 import '../widgets/weight_card.dart';
@@ -95,7 +96,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(20)),
-                  child: const Icon(Icons.more_vert_rounded, color: AppColors.textMid, size: 18),
+                  child: Icon(Icons.more_vert_rounded, color: AppColors.textMid, size: 18),
                 ),
               ),
             ),
@@ -156,7 +157,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         MacrosCard(carb: (cur: carbG, goal: 308), fat: (cur: fatG, goal: 82), protein: (cur: protG, goal: 123)),
         const SizedBox(height: 16),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Text('Diário', style: AppText.value),
+          Text('Diário', style: AppText.value),
           Text('${todayMeals.length} itens', style: AppText.small),
         ]),
         const SizedBox(height: 8),
@@ -169,7 +170,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         DiaryTile(icon: Icons.fastfood_rounded, title: 'Lanches', kcal: kcalBy('lanche'), onTap: () => _showMealSheet(context, mealType: 'lanche')),
         if (mealsBy('lanche').isNotEmpty) _mealList(mealsBy('lanche')),
         if (todayMeals.isEmpty)
-          Container(margin: const EdgeInsets.only(top: 8), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16)), child: const Row(children: [Icon(Icons.info_outline, size: 16, color: AppColors.textMid), SizedBox(width: 8), Text('Toque em Registre para adicionar', style: AppText.small)])),
+          Container(margin: const EdgeInsets.only(top: 8), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16)), child: Row(children: [Icon(Icons.info_outline, size: 16, color: AppColors.textMid), const SizedBox(width: 8), Text('Toque em Registre para adicionar', style: AppText.small)])),
         const SizedBox(height: 16),
       ],
     );
@@ -179,10 +180,32 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: const Row(children: [
-          Text('Hoje', style: AppText.title),
-          Icon(Icons.arrow_drop_down_rounded, color: AppColors.textDark),
-        ]),
+        title: Text('Hoje', style: AppText.title),
+        actions: [
+          Consumer(builder: (context, ref, _) {
+            final mode = ref.watch(themeModeProvider);
+            final isDark = mode == ThemeMode.dark || (mode == ThemeMode.system && AppColors.isDark);
+            return IconButton(
+              tooltip: isDark ? 'Modo claro' : 'Modo escuro',
+              icon: Icon(isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded, color: AppColors.textDark),
+              onPressed: () => ref.read(themeModeProvider.notifier).set(isDark ? ThemeMode.light : ThemeMode.dark),
+            );
+          }),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Center(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => _showLogoutSheet(context),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(20)),
+                  child: Icon(Icons.more_vert_rounded, color: AppColors.textMid, size: 18),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _nav == 0 ? body : _nav == 1 ? const NutritionScreen() : _nav == 2 ? const FastingHistoryScreen() : const HistoryPage(),
       floatingActionButton: FloatingActionButton(onPressed: () => _showMealSheet(context, mealType: 'almoco'), backgroundColor: AppColors.primary, shape: const CircleBorder(), child: const Icon(Icons.add, color: Colors.white)),
@@ -206,7 +229,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             InkWell(
               onTap: () => _showLogoutSheet(context),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.more_horiz_rounded, size: 20, color: AppColors.textMid),
+                Icon(Icons.more_horiz_rounded, size: 20, color: AppColors.textMid),
                 const SizedBox(height: 2),
                 Text('Mais', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: _nav == 3 ? AppColors.primary : AppColors.textMid)),
               ]),
@@ -233,6 +256,25 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           const SizedBox(height: 12),
           Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(4))),
           const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Align(alignment: Alignment.centerLeft, child: Text('Tema', style: AppText.label)),
+          ),
+          const SizedBox(height: 4),
+          Consumer(builder: (context, ref, _) {
+            final mode = ref.watch(themeModeProvider);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(children: [
+                ChoiceChip(label: const Text('Claro'), selected: mode == ThemeMode.light, onSelected: (_) => ref.read(themeModeProvider.notifier).set(ThemeMode.light)),
+                const SizedBox(width: 8),
+                ChoiceChip(label: const Text('Escuro'), selected: mode == ThemeMode.dark, onSelected: (_) => ref.read(themeModeProvider.notifier).set(ThemeMode.dark)),
+                const SizedBox(width: 8),
+                ChoiceChip(label: const Text('Sistema'), selected: mode == ThemeMode.system, onSelected: (_) => ref.read(themeModeProvider.notifier).set(ThemeMode.system)),
+              ]),
+            );
+          }),
+          const SizedBox(height: 8),
           ListTile(leading: const Icon(Icons.history_rounded), title: const Text('Histórico'), onTap: () { Navigator.pop(ctx); setState(() => _nav = 3); }),
           ListTile(leading: const Icon(Icons.logout_rounded, color: Colors.red), title: const Text('Sair da conta', style: TextStyle(color: Colors.red)), onTap: () { Navigator.pop(ctx); ref.read(authProvider.notifier).logout(); }),
           const SizedBox(height: 16),
@@ -245,7 +287,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         children: list.map((m) => Container(
               margin: const EdgeInsets.only(bottom: 6, left: 8, right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+              decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
               child: Row(children: [
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(m.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)), Text('${m.timeLabel} • ${m.calories} kcal', style: AppText.small)])),
                 PopupMenuButton<String>(
@@ -272,7 +314,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
               const SizedBox(height: 8),
               TextField(controller: calCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Calorias')),
               const SizedBox(height: 8),
-              DropdownButtonFormField<String>(value: type, decoration: const InputDecoration(labelText: 'Refeição'), dropdownColor: Colors.white, items: const [DropdownMenuItem(value: 'cafe', child: Text('Café da manhã', style: TextStyle(color: Color(0xFF1A1A1A)))), DropdownMenuItem(value: 'almoco', child: Text('Almoço', style: TextStyle(color: Color(0xFF1A1A1A)))), DropdownMenuItem(value: 'jantar', child: Text('Jantar', style: TextStyle(color: Color(0xFF1A1A1A)))), DropdownMenuItem(value: 'lanche', child: Text('Lanches', style: TextStyle(color: Color(0xFF1A1A1A))))], onChanged: (v) => setD(() => type = v ?? type)),
+              DropdownButtonFormField<String>(value: type, decoration: const InputDecoration(labelText: 'Refeição'), dropdownColor: AppColors.card, items: [DropdownMenuItem(value: 'cafe', child: Text('Café da manhã', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value: 'almoco', child: Text('Almoço', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value: 'jantar', child: Text('Jantar', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value: 'lanche', child: Text('Lanches', style: TextStyle(color: AppColors.textDark)))], onChanged: (v) => setD(() => type = v ?? type)),
             ]),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
@@ -325,7 +367,7 @@ class _FastingCounterCard extends StatelessWidget {
         decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), boxShadow: AppShadows.card, border: Border.all(color: isActive ? AppColors.primary.withOpacity(0.15) : Colors.transparent)),
         child: Column(children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(c == null ? 'Nenhum jejum ativo' : 'Jejum ${c.protocolName}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
+            Text(c == null ? 'Nenhum jejum ativo' : 'Jejum ${c.protocolName}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: c == null ? AppColors.bg : isActive ? AppColors.primary.withOpacity(0.12) : isPaused ? Colors.orange.withOpacity(0.12) : Colors.grey.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
@@ -335,7 +377,7 @@ class _FastingCounterCard extends StatelessWidget {
           const SizedBox(height: 12),
           Stack(alignment: Alignment.center, children: [
             SizedBox(width: 140, height: 140, child: CircularProgressIndicator(value: safeProgress, strokeWidth: 8, backgroundColor: AppColors.bg, valueColor: AlwaysStoppedAnimation(isPaused ? Colors.orange : AppColors.primary))),
-            Column(children: [Text(_fmt(elapsed), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textDark)), Text('restante ${_fmt(remaining)}', style: const TextStyle(fontSize: 11, color: AppColors.textDark)), if (c != null) Text('${(safeProgress * 100).toStringAsFixed(0)}%', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 11))]),
+            Column(children: [Text(_fmt(elapsed), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textDark)), Text('restante ${_fmt(remaining)}', style: TextStyle(fontSize: 11, color: AppColors.textDark)), if (c != null) Text('${(safeProgress * 100).toStringAsFixed(0)}%', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 11))]),
           ]),
           const SizedBox(height: 12),
           if (c == null)
@@ -376,7 +418,7 @@ class _ProtocolSelector extends StatelessWidget {
           return ChoiceChip(label: Text(p.name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isSel ? Colors.white : AppColors.textDark)), selected: isSel, selectedColor: AppColors.primary, backgroundColor: AppColors.bg, onSelected: enabled ? (_) => onSelect(p) : null);
         }).toList()),
         const SizedBox(height: 6),
-        Text(selected.description, style: const TextStyle(fontSize: 11, color: AppColors.textMid)),
+        Text(selected.description, style: TextStyle(fontSize: 11, color: AppColors.textMid)),
         if (!enabled) const Padding(padding: EdgeInsets.only(top: 6), child: Text('Finalize o jejum atual para trocar protocolo', style: TextStyle(fontSize: 10, color: Colors.orange))),
       ]),
     );
@@ -429,22 +471,22 @@ class _TacoSheetState extends State<_TacoSheet> {
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 16, right: 16, top: 16),
     child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children:[
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[const Text('Adicionar refeição', style: TextStyle(fontWeight: FontWeight.w700)), Container(padding: const EdgeInsets.symmetric(horizontal:8,vertical:4), decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Color(0xFFE8EAF0)), borderRadius: BorderRadius.circular(20)), child: DropdownButton<String>(value: _mealType, underline: const SizedBox(), isDense:true, dropdownColor: Colors.white, style: const TextStyle(fontSize:12, color: Color(0xFF1A1A1A), fontWeight: FontWeight.w600), items: const [DropdownMenuItem(value:'cafe', child: Text('Café', style: TextStyle(color: Color(0xFF1A1A1A)))), DropdownMenuItem(value:'almoco', child: Text('Almoço', style: TextStyle(color: Color(0xFF1A1A1A)))), DropdownMenuItem(value:'jantar', child: Text('Jantar', style: TextStyle(color: Color(0xFF1A1A1A)))), DropdownMenuItem(value:'lanche', child: Text('Lanches', style: TextStyle(color: Color(0xFF1A1A1A))))], onChanged:(v)=>setState(()=>_mealType=v??_mealType)))]),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[const Text('Adicionar refeição', style: TextStyle(fontWeight: FontWeight.w700)), Container(padding: const EdgeInsets.symmetric(horizontal:8,vertical:4), decoration: BoxDecoration(color: AppColors.card, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(20)), child: DropdownButton<String>(value: _mealType, underline: const SizedBox(), isDense:true, dropdownColor: AppColors.card, style: TextStyle(fontSize:12, color: AppColors.textDark, fontWeight: FontWeight.w600), items: [DropdownMenuItem(value:'cafe', child: Text('Café', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value:'almoco', child: Text('Almoço', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value:'jantar', child: Text('Jantar', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value:'lanche', child: Text('Lanches', style: TextStyle(color: AppColors.textDark)))], onChanged:(v)=>setState(()=>_mealType=v??_mealType)))]),
       const SizedBox(height: 8),
-      Text('Vai para: $_mealLabel', style: const TextStyle(fontSize:11, color: Color(0xFF0066FF), fontWeight: FontWeight.w600)), const SizedBox(height:8),
+      Text('Vai para: $_mealLabel', style: const TextStyle(fontSize:11, color: AppColors.primary, fontWeight: FontWeight.w600)), const SizedBox(height:8),
       TextField(controller: widget.searchCtrl, decoration: InputDecoration(labelText: 'Buscar (pão francês)', prefixIcon: const Icon(Icons.search), suffixIcon: _loading? const SizedBox(width:16,height:16, child: Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth:2))):null, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), onChanged: _search),
-      if (_res.isNotEmpty) Container(margin: const EdgeInsets.only(top:8), constraints: const BoxConstraints(maxHeight:160), decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE8EAF0)), borderRadius: BorderRadius.circular(12)), child: ListView.separated(shrinkWrap:true, itemCount:_res.length, separatorBuilder:(_,__)=>const Divider(height:1), itemBuilder:(_,i){final f=_res[i]; final sel=_sel?.id==f.id; return ListTile(dense:true, selected:sel, title: Text(f.nome, style: TextStyle(fontWeight: FontWeight.w600, color: sel? const Color(0xFF0066FF):null)), subtitle: Text('${f.kcalPer100g.toStringAsFixed(0)} kcal/100g', style: const TextStyle(fontSize:11)), trailing: sel? const Icon(Icons.check_circle, color: Color(0xFF0066FF)):null, onTap: ()=>setState(()=>_sel=f));})),
-      if (_sel!=null) Container(margin: const EdgeInsets.only(top:12), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF0066FF).withOpacity(0.08), borderRadius: BorderRadius.circular(12)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
+      if (_res.isNotEmpty) Container(margin: const EdgeInsets.only(top:8), constraints: const BoxConstraints(maxHeight:160), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12)), child: ListView.separated(shrinkWrap:true, itemCount:_res.length, separatorBuilder:(_,__)=>const Divider(height:1), itemBuilder:(_,i){final f=_res[i]; final sel=_sel?.id==f.id; return ListTile(dense:true, selected:sel, title: Text(f.nome, style: TextStyle(fontWeight: FontWeight.w600, color: sel? AppColors.primary:null)), subtitle: Text('${f.kcalPer100g.toStringAsFixed(0)} kcal/100g', style: const TextStyle(fontSize:11)), trailing: sel? const Icon(Icons.check_circle, color: AppColors.primary):null, onTap: ()=>setState(()=>_sel=f));})),
+      if (_sel!=null) Container(margin: const EdgeInsets.only(top:12), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(12)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
         Text(_sel!.nome, style: const TextStyle(fontWeight: FontWeight.w700)), const SizedBox(height:6),
         Row(children:[ChoiceChip(label: const Text('Gramas'), selected: !_isUn, onSelected:(v)=>setState(()=>_isUn=!v)), const SizedBox(width:8), ChoiceChip(label: const Text('Unidades'), selected: _isUn, onSelected:(v)=>setState(()=>_isUn=v))]),
         const SizedBox(height:8),
         if (!_isUn) Row(children:[IconButton(onPressed: ()=>setState(()=>_g=(_g-10).clamp(10,2000)), icon: const Icon(Icons.remove_circle_outline)), Expanded(child: Slider(value:_g, min:10, max:500, divisions:49, label:'${_g.toStringAsFixed(0)}g', onChanged:(v)=>setState(()=>_g=v))), IconButton(onPressed: ()=>setState(()=>_g=(_g+10).clamp(10,2000)), icon: const Icon(Icons.add_circle_outline))])
         else Row(children:[IconButton(onPressed: ()=>setState(()=>_un=(_un-1).clamp(1,20)), icon: const Icon(Icons.remove_circle_outline)), Expanded(child: Center(child: Text('$_un un'))), IconButton(onPressed: ()=>setState(()=>_un=(_un+1).clamp(1,20)), icon: const Icon(Icons.add_circle_outline))]),
-        const SizedBox(height:6), Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[const Text('Total:'), Text('$_kcal kcal', style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF0066FF)))]),
+        const SizedBox(height:6), Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[const Text('Total:'), Text('$_kcal kcal', style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary))]),
       ])),
       const Divider(height:24), TextField(controller: widget.manualNameCtrl, decoration: InputDecoration(labelText: 'Ou nome manual', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))), const SizedBox(height:8),
       TextField(controller: widget.manualCalCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Calorias manual', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
-      const SizedBox(height:12), FilledButton(style: FilledButton.styleFrom(backgroundColor: const Color(0xFF0066FF)), onPressed: (){ if(_sel!=null){ widget.onSave('${_sel!.nome} (${_isUn?'$_un un':'${_g.toStringAsFixed(0)}g'})', _kcal, _mealType); } else if(widget.manualNameCtrl.text.isNotEmpty && int.tryParse(widget.manualCalCtrl.text)!=null){ widget.onSave(widget.manualNameCtrl.text, int.parse(widget.manualCalCtrl.text), _mealType); } }, child: Text(_sel!=null ? 'Salvar em $_mealLabel • $_kcal kcal' : 'Salvar em $_mealLabel')), const SizedBox(height:16),
+      const SizedBox(height:12), FilledButton(style: FilledButton.styleFrom(backgroundColor: AppColors.primary), onPressed: (){ if(_sel!=null){ widget.onSave('${_sel!.nome} (${_isUn?'$_un un':'${_g.toStringAsFixed(0)}g'})', _kcal, _mealType); } else if(widget.manualNameCtrl.text.isNotEmpty && int.tryParse(widget.manualCalCtrl.text)!=null){ widget.onSave(widget.manualNameCtrl.text, int.parse(widget.manualCalCtrl.text), _mealType); } }, child: Text(_sel!=null ? 'Salvar em $_mealLabel • $_kcal kcal' : 'Salvar em $_mealLabel')), const SizedBox(height:16),
     ])),
   );
 }

@@ -44,7 +44,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: AppColors.bg,
-        appBar: AppBar(backgroundColor: AppColors.bg, elevation: 0, leading: _step > 0 ? IconButton(icon: const Icon(Icons.arrow_back, color: AppColors.textDark), onPressed: () { setState(() => _step--); _pageCtrl.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.ease); }) : null, title: LinearProgressIndicator(value: (_step + 1) / 4, backgroundColor: AppColors.border, valueColor: const AlwaysStoppedAnimation(AppColors.primary))),
+        appBar: AppBar(backgroundColor: AppColors.bg, elevation: 0, leading: _step > 0 ? IconButton(icon: Icon(Icons.arrow_back, color: AppColors.textDark), onPressed: () { setState(() => _step--); _pageCtrl.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.ease); }) : null, title: LinearProgressIndicator(value: (_step + 1) / 4, backgroundColor: AppColors.border, valueColor: const AlwaysStoppedAnimation(AppColors.primary))),
         body: PageView(
           controller: _pageCtrl,
           physics: const NeverScrollableScrollPhysics(),
@@ -62,7 +62,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Dados Básicos', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-          const Text('Essenciais para cálculo preciso', style: AppText.small),
+          Text('Essenciais para cálculo preciso', style: AppText.small),
           const SizedBox(height: 16),
           TextField(controller: _weightCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Peso atual (kg)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
           const SizedBox(height: 12),
@@ -85,7 +85,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Meta de Peso', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-          const Text('Peso final desejado', style: AppText.small),
+          Text('Peso final desejado', style: AppText.small),
           const SizedBox(height: 16),
           TextField(controller: _targetCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Meta (kg) ex: 80,0', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
         ]),
@@ -95,7 +95,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Ritmo Desejado', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-          const Text('Opcional, mas útil', style: AppText.small),
+          Text('Opcional, mas útil', style: AppText.small),
           const SizedBox(height: 16),
           ...['leve', 'moderado', 'intenso'].map((p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: ChoiceChip(label: Text(p == 'leve' ? 'Leve (-0,25kg/sem)' : p == 'moderado' ? 'Moderado (-0,5kg/sem)' : 'Intenso (-1kg/sem)'), selected: _pace == p, onSelected: (_) => setState(() => _pace = p), selectedColor: AppColors.primary.withOpacity(0.15)))),
         ]),

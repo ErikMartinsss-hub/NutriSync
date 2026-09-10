@@ -38,7 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Container(
-          decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFFF5F7FA), Color(0xFFFFFFFF)])),
+          decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [AppColors.bg, AppColors.card])),
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -55,9 +55,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ]),
                 ),
                 const SizedBox(height: 24),
-                const Text('Bem-vindo de volta', textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textDark)),
+                Text('Bem-vindo de volta', textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textDark)),
                 const SizedBox(height: 6),
-                const Text('Faça login para continuar sua jornada', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Color(0xFF666666))),
+                Text('Faça login para continuar sua jornada', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppColors.textMid)),
                 const SizedBox(height: 24),
                 Form(
                   key: _form,
@@ -87,15 +87,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
                 Row(children: [
-                  const Expanded(child: Divider(color: AppColors.border)),
+                  Expanded(child: Divider(color: AppColors.border)),
                   Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Text('ou entrar com', style: AppText.small)),
-                  const Expanded(child: Divider(color: AppColors.border))
+                  Expanded(child: Divider(color: AppColors.border))
                 ]),
                 const SizedBox(height: 16),
                 SizedBox(width: double.infinity, child: InkWell(onTap: _loginGoogle, child: _social('G', 'Google', const Color(0xFF4285F4)))),
                 const SizedBox(height: 24),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  const Text('Não tem uma conta? ', style: TextStyle(fontSize: 12, color: AppColors.textMid)),
+                  Text('Não tem uma conta? ', style: TextStyle(fontSize: 12, color: AppColors.textMid)),
                   GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())), child: const Text('Cadastre-se aqui', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w700))),
                 ]),
                 const SizedBox(height: 12),
@@ -111,14 +111,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         validator: validator,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.textMid, fontSize: 13),
+          hintStyle: TextStyle(color: AppColors.textMid, fontSize: 13),
           prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
           suffixIcon: suffix,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppColors.card,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary.withOpacity(0.15))),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.border)),
           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.2)),
         ),
       );
@@ -126,7 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _blob(double s, Color c, IconData ic) => Container(width: s, height: s, decoration: BoxDecoration(color: c, shape: BoxShape.circle), child: Icon(ic, color: c.withOpacity(0.9)));
   Widget _social(String letter, String label, Color col) => Container(
         height: 48,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: AppShadows.card, border: Border.all(color: AppColors.border)),
+        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), boxShadow: AppShadows.card, border: Border.all(color: AppColors.border)),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Container(width: 22, height: 22, decoration: BoxDecoration(color: col, shape: BoxShape.circle), child: Center(child: Text(letter, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12)))),
           const SizedBox(width: 8),

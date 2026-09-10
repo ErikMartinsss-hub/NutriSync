@@ -90,7 +90,7 @@ class _State extends ConsumerState<FastingHistoryScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: AppBar(backgroundColor: AppColors.bg, elevation: 0, title: const Text('Meu Jejum', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textDark)), centerTitle: true),
+      appBar: AppBar(backgroundColor: AppColors.bg, elevation: 0, title: Text('Meu Jejum', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textDark)), centerTitle: true),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         // filtros
         SingleChildScrollView(
@@ -133,7 +133,7 @@ class _State extends ConsumerState<FastingHistoryScreen> {
             const Text('Evolução', style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             if (perDay.isEmpty)
-              const SizedBox(height: 120, child: Center(child: Text('Sem dados no período', style: TextStyle(color: AppColors.textMid, fontSize: 12))))
+              SizedBox(height: 120, child: Center(child: Text('Sem dados no período', style: TextStyle(color: AppColors.textMid, fontSize: 12))))
             else
               SizedBox(
                 height: 130,
@@ -151,7 +151,7 @@ class _State extends ConsumerState<FastingHistoryScreen> {
                           const SizedBox(height: 4),
                           Container(height: h.clamp(6, 80), decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(6))),
                           const SizedBox(height: 4),
-                          Text(d, style: const TextStyle(fontSize: 8, color: AppColors.textMid)),
+                          Text(d, style: TextStyle(fontSize: 8, color: AppColors.textMid)),
                         ]),
                       ),
                     );
@@ -175,13 +175,13 @@ class _State extends ConsumerState<FastingHistoryScreen> {
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('${DateFormat('dd/MM/yyyy HH:mm', 'pt_BR').format(dt)} • ${s.protocolName}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
-                Text('${_fmt(sec)} • ${_statusPt(s.status)}', style: const TextStyle(fontSize: 11, color: AppColors.textMid)),
+                Text('${_fmt(sec)} • ${_statusPt(s.status)}', style: TextStyle(fontSize: 11, color: AppColors.textMid)),
               ])),
               Text(_fmt(sec), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
             ]),
           );
         }),
-        if (list.isEmpty) Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16)), child: const Column(children: [Icon(Icons.timer_off, color: AppColors.textMid), SizedBox(height: 8), Text('Nenhum jejum no período', style: TextStyle(color: AppColors.textMid, fontSize: 12))])),
+        if (list.isEmpty) Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16)), child: Column(children: [Icon(Icons.timer_off, color: AppColors.textMid), const SizedBox(height: 8), Text('Nenhum jejum no período', style: TextStyle(color: AppColors.textMid, fontSize: 12))])),
       ]),
     );
   }
@@ -193,7 +193,7 @@ class _State extends ConsumerState<FastingHistoryScreen> {
           Icon(ic, size: 16, color: c),
           const SizedBox(height: 4),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-          Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textMid)),
+          Text(label, style: TextStyle(fontSize: 10, color: AppColors.textMid)),
         ]),
       );
 }

@@ -44,8 +44,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> with SingleTi
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textDark), onPressed: () => Navigator.maybePop(context)),
-        title: const Text('Nutrição', style: AppText.title),
+        leading: IconButton(icon: Icon(Icons.arrow_back_rounded, color: AppColors.textDark), onPressed: () => Navigator.maybePop(context)),
+        title: Text('Nutrição', style: AppText.title),
         centerTitle: true,
         bottom: TabBar(
           controller: _tab,
@@ -65,7 +65,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> with SingleTi
             decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(AppRadius.pill), boxShadow: AppShadows.card),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               IconButton(onPressed: () => setState(() => _period = _period == 'Hoje' ? 'Ontem' : 'Hoje'), icon: const Icon(Icons.chevron_left_rounded)),
-              Column(children: [const Text('Visualização do dia', style: AppText.small), Text(_period, style: AppText.value.copyWith(fontSize: 14))]),
+              Column(children: [Text('Visualização do dia', style: AppText.small), Text(_period, style: AppText.value.copyWith(fontSize: 14))]),
               IconButton(onPressed: () => setState(() => _period = _period == 'Hoje' ? 'Ontem' : 'Hoje'), icon: const Icon(Icons.chevron_right_rounded)),
             ]),
           ),
@@ -106,7 +106,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> with SingleTi
                 const Text('Alimentos com mais Carboidratos', style: TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 ...dayMeals.take(3).map((m) => ListTile(dense: true, leading: const Icon(Icons.restaurant, size: 18, color: AppColors.carb), title: Text(m.name, style: const TextStyle(fontSize: 12)), trailing: Text('${m.calories} cal', style: AppText.label))),
-                if (dayMeals.isEmpty) const Text('Nenhum alimento hoje', style: AppText.small),
+                if (dayMeals.isEmpty) Text('Nenhum alimento hoje', style: AppText.small),
               ])),
             ]),
           ]),

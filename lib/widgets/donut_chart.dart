@@ -22,7 +22,7 @@ class MealDonut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = (breakfast + lunch + dinner + snack).toDouble();
-    if (total == 0) return const SizedBox(height: 180, child: Center(child: Text('Sem dados', style: AppText.label)));
+    if (total == 0) return SizedBox(height: 180, child: Center(child: Text('Sem dados', style: AppText.label)));
     return SizedBox(height: 180, child: PieChart(PieChartData(centerSpaceRadius: 58, sectionsSpace: 2, sections: [
       PieChartSectionData(value: breakfast / total * 100, color: AppColors.primary, title: 'Café'),
       PieChartSectionData(value: lunch / total * 100, color: AppColors.carb, title: 'Almoço'),

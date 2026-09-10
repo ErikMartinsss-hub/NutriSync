@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
+import 'design/tokens.dart';
 import 'features/auth/presentation/auth_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/today_screen.dart';
@@ -11,12 +13,20 @@ class NutriSyncApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final systemBrightness = MediaQuery.platformBrightnessOf(context);
+    final resolvedBrightness = themeMode == ThemeMode.light
+        ? Brightness.light
+        : themeMode == ThemeMode.dark
+            ? Brightness.dark
+            : systemBrightness;
+    AppColors.mode = resolvedBrightness;
     return MaterialApp(
       title: 'NutriSync',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       builder: (context, child) {
         // Captura erros de build e mostra em vez de tela branca
         ErrorWidget.builder = (details) => Scaffold(
