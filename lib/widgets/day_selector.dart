@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../design/tokens.dart';
 
 class DaySelector extends StatefulWidget {
-  const DaySelector({super.key, required this.onSelect, this.initial = 1});
+  const DaySelector({super.key, required this.onSelect, this.initial = 0});
   final ValueChanged<int> onSelect;
   final int initial;
   @override
