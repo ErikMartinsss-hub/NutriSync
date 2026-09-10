@@ -9,8 +9,8 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _email = TextEditingController(text: 'demo@mamba.com');
-  final _pass = TextEditingController(text: '123456');
+  final _email = TextEditingController();
+  final _pass = TextEditingController();
   bool _loading = false;
   String? _error;
   bool _obscure = true;
@@ -66,6 +66,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               labelText: 'Email',
+                              hintText: 'Digite seu Email',
                               prefixIcon: const Icon(Icons.email_outlined),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             ),
@@ -76,6 +77,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             obscureText: _obscure,
                             decoration: InputDecoration(
                               labelText: 'Senha',
+                              hintText: 'Digite a sua senha',
                               prefixIcon: const Icon(Icons.lock_outline),
                               suffixIcon: IconButton(
                                 icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),

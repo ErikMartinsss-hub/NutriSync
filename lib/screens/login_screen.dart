@@ -11,8 +11,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _email = TextEditingController(text: 'demo@mamba.com');
-  final _pass = TextEditingController(text: '123456');
+  final _email = TextEditingController();
+  final _pass = TextEditingController();
   final _form = GlobalKey<FormState>();
   bool _obscure = true, _loading = false;
   String? _error;
@@ -62,9 +62,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Form(
                   key: _form,
                   child: Column(children: [
-                    _input(controller: _email, hint: 'E-mail', icon: Icons.mail_outline_rounded, validator: (v) => v != null && v.contains('@') ? null : 'E-mail inválido'),
+                    _input(controller: _email, hint: 'Digite seu Email', icon: Icons.mail_outline_rounded, validator: (v) => v != null && v.contains('@') ? null : 'E-mail inválido'),
                     const SizedBox(height: 12),
-                    _input(controller: _pass, hint: 'Senha', icon: Icons.lock_outline_rounded, obscure: _obscure, suffix: IconButton(icon: Icon(_obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: AppColors.textMid), onPressed: () => setState(() => _obscure = !_obscure)), validator: (v) => v != null && v.length >= 3 ? null : 'Mín 3 caracteres'),
+                    _input(controller: _pass, hint: 'Digite a sua senha', icon: Icons.lock_outline_rounded, obscure: _obscure, suffix: IconButton(icon: Icon(_obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: AppColors.textMid), onPressed: () => setState(() => _obscure = !_obscure)), validator: (v) => v != null && v.length >= 3 ? null : 'Mín 3 caracteres'),
                     const SizedBox(height: 8),
                     Align(alignment: Alignment.centerRight, child: TextButton(onPressed: () {}, child: const Text('Esqueceu a senha?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 12)))),
                     if (_error != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 12))),
