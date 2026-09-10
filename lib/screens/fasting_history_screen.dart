@@ -140,8 +140,9 @@ class _State extends ConsumerState<FastingHistoryScreen> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: days.map((d) {
-                    final sec = perDay[d]!;
-                    final h = maxSec == 0 ? 0.0 : sec / maxSec * 80;
+                    final sec = perDay[d] ?? 0;
+                    final ratio = maxSec == 0 ? 0.0 : sec / maxSec;
+                    final h = ratio.isFinite ? ratio * 80 : 0.0;
                     return SizedBox(
                       width: 48,
                       child: Padding(
@@ -149,7 +150,7 @@ class _State extends ConsumerState<FastingHistoryScreen> {
                         child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
                           Text(_fmt(sec), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 4),
-                          Container(height: h.clamp(6, 80), decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(6))),
+                          Container(height: h.clamp(6, 80).toDouble(), decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(6))),
                           const SizedBox(height: 4),
                           Text(d, style: TextStyle(fontSize: 8, color: AppColors.textMid)),
                         ]),

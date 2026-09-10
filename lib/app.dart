@@ -28,21 +28,28 @@ class NutriSyncApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       builder: (context, child) {
-        // Captura erros de build e mostra em vez de tela branca
-        ErrorWidget.builder = (details) => Scaffold(
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
+        // Captura erros de build e mostra aviso compacto — NUNCA loga o usuário fora
+        ErrorWidget.builder = (details) => Material(
+              color: AppColors.bg,
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.orange),
-                      const SizedBox(height: 12),
-                      Text('Erro: ${details.exception}', textAlign: TextAlign.center),
+                      const Icon(Icons.warning_amber_rounded, size: 32, color: Colors.orange),
                       const SizedBox(height: 8),
-                      Text(details.stack.toString().substring(0, 600), style: const TextStyle(fontSize: 10)),
-                      const SizedBox(height: 12),
-                      FilledButton(onPressed: () => ref.read(authProvider.notifier).logout(), child: const Text('Voltar ao Login')),
+                      const Text('Algo deu errado ao exibir esta área', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                      const SizedBox(height: 6),
+                      Text('${details.exceptionAsString()}', textAlign: TextAlign.center, maxLines: 4, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10, color: AppColors.textMid)),
+                      const SizedBox(height: 8),
+                      FilledButton(
+                        style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6)),
+                        onPressed: () => Navigator.maybePop(context),
+                        child: const Text('Entendi', style: TextStyle(fontSize: 11)),
+                      ),
                     ],
                   ),
                 ),

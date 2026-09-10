@@ -70,8 +70,14 @@ class FastingNotifier extends StateNotifier<FastingState> {
 
   void _startTicker() {
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      state = state.copyWith(now: DateTime.now());
-      _checkCompletion();
+      try {
+        state = state.copyWith(now: DateTime.now());
+        _checkCompletion();
+      } catch (e, st) {
+        // erro de tick não pode derrubar o app (ex.: notificação falhando offline)
+        // ignore: avoid_print
+        print('[MAMBA] tick error: $e $st');
+      }
     });
   }
 

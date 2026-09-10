@@ -39,15 +39,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final logged = prefs.getBool('isLoggedIn') ?? false;
-    final email = prefs.getString('email');
-    final fbUser = _auth.currentUser;
-    if (fbUser != null) {
-      state = AuthState(isLoggedIn: true, email: fbUser.email, isLoading: false, firebaseUser: fbUser);
-      return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final logged = prefs.getBool('isLoggedIn') ?? false;
+      final email = prefs.getString('email');
+      User? fbUser;
+      try {
+        fbUser = _auth.currentUser;
+      } catch (_) {}
+      if (fbUser != null) {
+        state = AuthState(isLoggedIn: true, email: fbUser.email, isLoading: false, firebaseUser: fbUser);
+        return;
+      }
+      // offline/transição: mantém sessão local se já estava logado
+      state = AuthState(isLoggedIn: logged, email: email, isLoading: false);
+    } catch (_) {
+      state = const AuthState(isLoggedIn: false, isLoading: false);
     }
-    state = AuthState(isLoggedIn: logged, email: email, isLoading: false);
   }
 
   Future<bool> login(String email, String password) async {

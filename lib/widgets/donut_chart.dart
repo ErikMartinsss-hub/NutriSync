@@ -6,7 +6,11 @@ class MacroDonut extends StatelessWidget {
   const MacroDonut({super.key, required this.carbPct, required this.fatPct, required this.proteinPct});
   final double carbPct, fatPct, proteinPct;
   @override
-  Widget build(BuildContext context) => SizedBox(
+  Widget build(BuildContext context) {
+    if (carbPct <= 0 && fatPct <= 0 && proteinPct <= 0) {
+      return SizedBox(height: 180, child: Center(child: Text('Sem dados', style: AppText.label)));
+    }
+    return SizedBox(
         height: 180,
         child: PieChart(PieChartData(centerSpaceRadius: 58, sectionsSpace: 2, sections: [
           PieChartSectionData(value: carbPct, color: AppColors.carb, title: '${carbPct.toStringAsFixed(0)}%', titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11), radius: 36),
@@ -14,6 +18,7 @@ class MacroDonut extends StatelessWidget {
           PieChartSectionData(value: proteinPct, color: AppColors.protein, title: '${proteinPct.toStringAsFixed(0)}%', titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11), radius: 36),
         ])),
       );
+  }
 }
 
 class MealDonut extends StatelessWidget {
