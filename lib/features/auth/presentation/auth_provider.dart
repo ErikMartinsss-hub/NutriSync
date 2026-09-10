@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/analytics_service.dart';
+import '../../../core/services/saved_credentials.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
 
@@ -58,7 +59,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password, {bool savePassword = false}) async {
     if (email.isEmpty || !email.contains('@') || password.length < 3) return false;
     try {
       log('[AUTH] Tentando login Firebase: $email');
@@ -71,6 +72,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await prefs.setString('email', email);
       AnalyticsService.setUserId(email);
       AnalyticsService.logEvent('login');
+      if (savePassword) await SavedCredentials.save(email.trim(), password: password);
       return true;
     } on FirebaseAuthException catch (e) {
       log('[AUTH] Login Firebase ERRO: ${e.code} - ${e.message}');
@@ -118,7 +120,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> loginWithGoogle() async {
+  Future<bool> loginWithGoogle({bool savePassword = false}) async {
     try {
       await _ensureGoogleInit();
       final account = await GoogleSignIn.instance.authenticate();
@@ -132,6 +134,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       AnalyticsService.setUserId(user?.email ?? account.email);
       AnalyticsService.logEvent('login_google');
       state = AuthState(isLoggedIn: true, email: user?.email ?? account.email, isLoading: false, firebaseUser: user);
+      if (savePassword) await SavedCredentials.save((user?.email ?? account.email).trim());
       return true;
     } on GoogleSignInException catch (e) {
       log('[AUTH] GoogleSignIn ERRO code=${e.code} desc=${e.description} details=${e.details}');
@@ -143,6 +146,38 @@ class AuthNotifier extends StateNotifier<AuthState> {
       log('[AUTH] Google login ERRO generico: $e');
       return false;
     }
+  }
+
+  Future<bool> biometricLogin() async {
+    final creds = await SavedCredentials.read();
+    if (creds == null) return false;
+    if (creds.password.isNotEmpty) {
+      try {
+        log('[AUTH] Login biométrico via credencial salva: ${creds.email}');
+        await _auth.signInWithEmailAndPassword(email: creds.email, password: creds.password);
+        final user = _auth.currentUser;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('email', user?.email ?? creds.email);
+        AnalyticsService.setUserId(user?.email ?? creds.email);
+        state = AuthState(isLoggedIn: true, email: user?.email ?? creds.email, isLoading: false, firebaseUser: user);
+        return true;
+      } catch (e) {
+        log('[AUTH] Login biométrico ERRO: $e');
+        return false;
+      }
+    }
+    // conta via Google: usa sessão em cache do Firebase, se houver
+    final cached = _auth.currentUser;
+    if (cached != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('email', cached.email ?? creds.email);
+      AnalyticsService.setUserId(cached.email ?? creds.email);
+      state = AuthState(isLoggedIn: true, email: cached.email ?? creds.email, isLoading: false, firebaseUser: cached);
+      return true;
+    }
+    return false;
   }
 
   Future<void> logout() async {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/services/biometric_service.dart';
+import '../core/services/saved_credentials.dart';
 import '../design/tokens.dart';
 import '../features/auth/presentation/auth_provider.dart';
 import 'register_screen.dart';
@@ -14,14 +16,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _pass = TextEditingController();
   final _form = GlobalKey<FormState>();
-  bool _obscure = true, _loading = false;
+  bool _obscure = true, _loading = false, _savePass = true, _hasSaved = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSaved();
+  }
+
+  Future<void> _checkSaved() async {
+    final saved = await SavedCredentials.hasSaved();
+    if (mounted) setState(() => _hasSaved = saved);
+  }
 
   Future<void> _login() async {
     if (!_form.currentState!.validate()) return;
     setState(() { _loading = true; _error = null; });
     try {
-      await ref.read(authProvider.notifier).login(_email.text.trim(), _pass.text);
+      await ref.read(authProvider.notifier).login(_email.text.trim(), _pass.text, savePassword: _savePass);
     } catch (e) {
       if (mounted) setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     }
@@ -30,9 +43,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _loginGoogle() async {
     setState(() => _loading = true);
-    final ok = await ref.read(authProvider.notifier).loginWithGoogle();
+    final ok = await ref.read(authProvider.notifier).loginWithGoogle(savePassword: _savePass);
     setState(() => _loading = false);
     if (!ok && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google Sign-In cancelado ou falhou')));
+  }
+
+  Future<void> _biometricLogin() async {
+    if (!await BiometricService.isAvailable()) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nenhuma digital cadastrada neste aparelho')));
+      return;
+    }
+    setState(() => _loading = true);
+    final authed = await BiometricService.authenticate();
+    if (!authed) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Autenticação cancelada ou falhou')));
+      }
+      return;
+    }
+    final ok = await ref.read(authProvider.notifier).biometricLogin();
+    if (mounted) setState(() => _loading = false);
+    if (!ok && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Não foi possível entrar com a digital')));
   }
 
   @override
@@ -66,7 +98,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 12),
                     _input(controller: _pass, hint: 'Digite a sua senha', icon: Icons.lock_outline_rounded, obscure: _obscure, suffix: IconButton(icon: Icon(_obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: AppColors.textMid), onPressed: () => setState(() => _obscure = !_obscure)), validator: (v) => v != null && v.length >= 3 ? null : 'Mín 3 caracteres'),
                     const SizedBox(height: 8),
-                    Align(alignment: Alignment.centerRight, child: TextButton(onPressed: () {}, child: const Text('Esqueceu a senha?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 12)))),
+                    Row(children: [
+                      TextButton(onPressed: () {}, child: const Text('Esqueceu a senha?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 12))),
+                      const Spacer(),
+                      Text('Salvar senha no app', style: TextStyle(fontSize: 12, color: AppColors.textMid, fontWeight: FontWeight.w600)),
+                      Switch(value: _savePass, onChanged: (v) => setState(() => _savePass = v), activeTrackColor: AppColors.primary, activeThumbColor: Colors.white, inactiveThumbColor: AppColors.textMid),
+                    ]),
                     if (_error != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 12))),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -93,6 +130,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ]),
                 const SizedBox(height: 16),
                 SizedBox(width: double.infinity, child: InkWell(onTap: _loginGoogle, child: _social('G', 'Google', const Color(0xFF4285F4)))),
+                if (_hasSaved) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: _loading ? null : _biometricLogin,
+                      icon: const Icon(Icons.fingerprint_rounded, color: AppColors.primary),
+                      label: const Text('Entrar com digital', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Text('Não tem uma conta? ', style: TextStyle(fontSize: 12, color: AppColors.textMid)),
