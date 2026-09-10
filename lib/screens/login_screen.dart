@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/services/biometric_service.dart';
 import '../core/services/saved_credentials.dart';
 import '../design/tokens.dart';
 import '../features/auth/presentation/auth_provider.dart';
@@ -16,7 +15,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _pass = TextEditingController();
   final _form = GlobalKey<FormState>();
-  bool _obscure = true, _loading = false, _savePass = true, _hasSaved = false;
+  bool _obscure = true, _loading = false, _savePass = true;
   String? _error;
 
   @override
@@ -26,15 +25,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _checkSaved() async {
-    final saved = await SavedCredentials.hasSaved();
-    if (mounted && saved) {
-      final creds = await SavedCredentials.read();
-      if (mounted && creds != null) {
-        _email.text = creds.email;
-        if (creds.password.isNotEmpty) _pass.text = creds.password;
-      }
+    final creds = await SavedCredentials.read();
+    if (mounted && creds != null) {
+      _email.text = creds.email;
+      if (creds.password.isNotEmpty) _pass.text = creds.password;
     }
-    if (mounted) setState(() => _hasSaved = saved);
   }
 
   Future<void> _login() async {
@@ -53,31 +48,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final ok = await ref.read(authProvider.notifier).loginWithGoogle(savePassword: _savePass);
     setState(() => _loading = false);
     if (!ok && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google Sign-In cancelado ou falhou')));
-  }
-
-  Future<void> _biometricLogin() async {
-    if (!await BiometricService.hasEnrolledBiometrics()) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text('Nenhuma digital cadastrada neste aparelho.'),
-          action: SnackBarAction(label: 'CONFIGURAR', onPressed: BiometricService.openEnrollSettings),
-          duration: const Duration(seconds: 6),
-        ));
-      }
-      return;
-    }
-    setState(() => _loading = true);
-    final result = await BiometricService.authenticate();
-    if (!result.success) {
-      if (mounted) {
-        setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message ?? 'Não foi possível usar a digital. Tente novamente.')));
-      }
-      return;
-    }
-    final ok = await ref.read(authProvider.notifier).biometricLogin();
-    if (mounted) setState(() => _loading = false);
-    if (!ok && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Não foi possível entrar com a digital')));
   }
 
   @override
@@ -143,23 +113,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ]),
                 const SizedBox(height: 16),
                 SizedBox(width: double.infinity, child: InkWell(onTap: _loginGoogle, child: _social('G', 'Google', const Color(0xFF4285F4)))),
-                if (_hasSaved) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: OutlinedButton.icon(
-                      onPressed: _loading ? null : _biometricLogin,
-                      icon: const Icon(Icons.fingerprint_rounded, color: AppColors.primary),
-                      label: const Text('Entrar com digital', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ),
-                ],
                 const SizedBox(height: 24),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Text('Não tem uma conta? ', style: TextStyle(fontSize: 12, color: AppColors.textMid)),

@@ -15,11 +15,6 @@ class SavedCredentials {
     await _storage.delete(key: _kPass);
   }
 
-  static Future<bool> hasSaved() async {
-    final email = await _storage.read(key: _kEmail);
-    return email != null && email.isNotEmpty;
-  }
-
   static Future<({String email, String password})?> read() async {
     final email = await _storage.read(key: _kEmail);
     final pass = await _storage.read(key: _kPass) ?? '';

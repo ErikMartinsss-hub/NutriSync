@@ -148,38 +148,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> biometricLogin() async {
-    final creds = await SavedCredentials.read();
-    if (creds == null) return false;
-    if (creds.password.isNotEmpty) {
-      try {
-        log('[AUTH] Login biométrico via credencial salva: ${creds.email}');
-        await _auth.signInWithEmailAndPassword(email: creds.email, password: creds.password);
-        final user = _auth.currentUser;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('email', user?.email ?? creds.email);
-        AnalyticsService.setUserId(user?.email ?? creds.email);
-        state = AuthState(isLoggedIn: true, email: user?.email ?? creds.email, isLoading: false, firebaseUser: user);
-        return true;
-      } catch (e) {
-        log('[AUTH] Login biométrico ERRO: $e');
-        return false;
-      }
-    }
-    // conta via Google: usa sessão em cache do Firebase, se houver
-    final cached = _auth.currentUser;
-    if (cached != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('email', cached.email ?? creds.email);
-      AnalyticsService.setUserId(cached.email ?? creds.email);
-      state = AuthState(isLoggedIn: true, email: cached.email ?? creds.email, isLoading: false, firebaseUser: cached);
-      return true;
-    }
-    return false;
-  }
-
   Future<void> logout() async {
     try { await GoogleSignIn.instance.signOut(); } catch (_) {}
     try { await _auth.signOut(); } catch (_) {}
