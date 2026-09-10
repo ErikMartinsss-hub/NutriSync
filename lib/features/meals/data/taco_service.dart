@@ -37,7 +37,6 @@ class TacoFood {
   double get carboPer100g => _parse(carboGRaw);
   double get lipideosPer100g => _parse(lipideosGRaw);
 
-  // cálculo por quantidade: gramas ou unidades (1un ~ 50g para pão, mas usa 100g base)
   int kcalFor(double gramas) => (kcalPer100g * gramas / 100).round();
   int kcalForUnidades(int unidades, {double gramasPorUnidade = 50}) => kcalFor(unidades * gramasPorUnidade);
 
@@ -57,13 +56,12 @@ class TacoFood {
 
 class TacoService {
   static const _baseUrl = 'https://mamba-taco-api.onrender.com/api/alimentos/ibge';
-  // fallback MuMu local (10.0.2.2) caso Render em cold start
   static const _fallbackUrl = 'http://10.0.2.2:8000/api/alimentos/ibge';
 
   static List<TacoFood>? _cache;
   static DateTime? _cacheTime;
+  static bool _fetching = false;
 
-  // mock local para offline instantâneo (cobre pão francês etc)
   static final List<TacoFood> _mock = [
     TacoFood(id: 1, codigo: '1', nome: 'Pão francês', categoria: 'Panificados', descricaoPreparacao: 'Não se aplica', energiaKcalRaw: '300', proteinaGRaw: '8', carboGRaw: '58', lipideosGRaw: '3', fibraGRaw: '2'),
     TacoFood(id: 2, codigo: '2', nome: 'Ovo de galinha cozido', categoria: 'Ovos', descricaoPreparacao: 'Cozido', energiaKcalRaw: '146', proteinaGRaw: '13', carboGRaw: '1', lipideosGRaw: '9', fibraGRaw: '0'),
@@ -72,13 +70,21 @@ class TacoService {
     TacoFood(id: 5, codigo: '5', nome: 'Peito de frango grelhado', categoria: 'Carnes', descricaoPreparacao: 'Grelhado', energiaKcalRaw: '159', proteinaGRaw: '32', carboGRaw: '0', lipideosGRaw: '3', fibraGRaw: '0'),
   ];
 
+  /// Pre-aquece o cache em background — chamar no startup do app.
+  static void preload() {
+    if (_cache != null || _fetching) return;
+    fetchAll();
+  }
+
   static Future<List<TacoFood>> fetchAll() async {
-    if (!FeatureFlags.isEnabled('taco_online_search')) {
-      return _mock;
-    }
     if (_cache != null && _cacheTime != null && DateTime.now().difference(_cacheTime!).inMinutes < 10) {
       return _cache!;
     }
+    if (!FeatureFlags.isEnabled('taco_online_search')) {
+      return _mock;
+    }
+    if (_fetching) return _mock;
+    _fetching = true;
     try {
       final res = await http.get(Uri.parse(_baseUrl)).timeout(const Duration(seconds: 8));
       if (res.statusCode == 200) {
@@ -90,26 +96,29 @@ class TacoService {
           return list;
         }
       }
-    } catch (_) {}
-    // fallback tenta local, senão mock
-    try {
       final res2 = await http.get(Uri.parse(_fallbackUrl)).timeout(const Duration(seconds: 2));
       if (res2.statusCode == 200) {
-        final List data = jsonDecode(res2.body) as List;
-        final list = data.map((e) => TacoFood.fromJson(e as Map<String, dynamic>)).toList();
-        if (list.isNotEmpty) return list;
+        final List data2 = jsonDecode(res2.body) as List;
+        final list2 = data2.map((e) => TacoFood.fromJson(e as Map<String, dynamic>)).toList();
+        if (list2.isNotEmpty) {
+          _cache = list2;
+          _cacheTime = DateTime.now();
+          return list2;
+        }
       }
-    } catch (_) {}
-    return _mock;
+      return _mock;
+    } catch (_) {
+      return _mock;
+    } finally {
+      _fetching = false;
+    }
   }
 
   static Future<List<TacoFood>> search(String query) async {
     if (query.trim().isEmpty) return [];
     final all = await fetchAll();
     final q = query.toLowerCase();
-    // prioriza mock + contém query
     final filtered = all.where((f) => f.nome.toLowerCase().contains(q) || f.categoria.toLowerCase().contains(q)).toList();
-    // ordena por relevância (começa com query primeiro)
     filtered.sort((a, b) {
       final aStarts = a.nome.toLowerCase().startsWith(q) ? 0 : 1;
       final bStarts = b.nome.toLowerCase().startsWith(q) ? 0 : 1;

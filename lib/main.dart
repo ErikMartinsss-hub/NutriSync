@@ -8,6 +8,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/services/notification_service.dart';
+import 'features/meals/data/taco_service.dart';
 import 'app.dart';
 
 Future<void> main() async {
@@ -92,6 +93,11 @@ Future<void> main() async {
   } catch (e) {
     debugPrint('Intl init error: $e');
   }
+
+  // Pre-aquece o cache da API TACO (evita busca vazia no primeiro uso)
+  try {
+    TacoService.preload();
+  } catch (_) {}
 
   runZonedGuarded(() {
     runApp(const ProviderScope(child: NutriSyncApp()));

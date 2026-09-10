@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../design/tokens.dart';
@@ -20,11 +21,22 @@ class _AddMealScreenState extends ConsumerState<AddMealScreen> {
   bool _loading = false;
   TacoFood? _selected;
   double _gramas = 100;
+  Timer? _debounce;
+  int _searchSeq = 0;
 
   @override
   void initState() {
     super.initState();
     _mealType = widget.initialType;
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchCtrl.dispose();
+    _nameCtrl.dispose();
+    _kcalCtrl.dispose();
+    super.dispose();
   }
 
   String get _mealKey {
@@ -36,11 +48,22 @@ class _AddMealScreenState extends ConsumerState<AddMealScreen> {
     }
   }
 
+  void _onSearchChanged(String q) {
+    _debounce?.cancel();
+    if (q.length < 2) {
+      setState(() => _results = []);
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 400), () => _search(q));
+  }
+
   Future<void> _search(String q) async {
-    if (q.length < 2) { setState(() => _results = []); return; }
+    final seq = ++_searchSeq;
     setState(() => _loading = true);
     final r = await TacoService.search(q);
-    if (mounted) setState(() { _results = r; _loading = false; });
+    if (mounted && seq == _searchSeq) {
+      setState(() { _results = r; _loading = false; });
+    }
   }
 
   void _select(TacoFood f) {
@@ -90,7 +113,7 @@ class _AddMealScreenState extends ConsumerState<AddMealScreen> {
             decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), boxShadow: AppShadows.card),
             child: TextField(
               controller: _searchCtrl,
-              onChanged: _search,
+              onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 hintText: 'Buscar por nome (ex: Pão francês)',
                 hintStyle: TextStyle(color: AppColors.textMid, fontSize: 13),

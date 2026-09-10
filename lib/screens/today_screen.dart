@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../design/tokens.dart';
@@ -455,16 +456,26 @@ class _TacoSheetState extends State<_TacoSheet> {
   TacoFood? _sel;
   double _g = 100; int _un = 1; bool _isUn = false; double _gUn = 50;
   late String _mealType;
+  Timer? _debounce;
+  int _searchSeq = 0;
   @override
   void initState() { super.initState(); _mealType = widget.initialMealType; }
-  Future<void> _search(String q) async { if (q.length < 2) { setState(() {
-        _res = [];
-      }); return; } setState(() {
-        _loading = true;
-      }); final r = await TacoService.search(q); if (mounted) setState(() {
-        _res = r;
-        _loading = false;
-      }); }
+  @override
+  void dispose() { _debounce?.cancel(); super.dispose(); }
+  void _onSearchChanged(String q) {
+    _debounce?.cancel();
+    if (q.length < 2) { setState(() => _res = []); return; }
+    _debounce = Timer(const Duration(milliseconds: 400), () => _search(q));
+  }
+  Future<void> _search(String q) async {
+    final seq = ++_searchSeq;
+    setState(() { _loading = true; });
+    final r = await TacoService.search(q);
+    if (mounted && seq == _searchSeq) setState(() {
+      _res = r;
+      _loading = false;
+    });
+  }
   int get _kcal => _sel==null?0: _isUn ? _sel!.kcalForUnidades(_un, gramasPorUnidade: _gUn) : _sel!.kcalFor(_g);
   String get _mealLabel => {'cafe':'Café da manhã','almoco':'Almoço','jantar':'Jantar','lanche':'Lanches'}[_mealType] ?? _mealType;
   @override
@@ -474,7 +485,7 @@ class _TacoSheetState extends State<_TacoSheet> {
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[const Text('Adicionar refeição', style: TextStyle(fontWeight: FontWeight.w700)), Container(padding: const EdgeInsets.symmetric(horizontal:8,vertical:4), decoration: BoxDecoration(color: AppColors.card, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(20)), child: DropdownButton<String>(value: _mealType, underline: const SizedBox(), isDense:true, dropdownColor: AppColors.card, style: TextStyle(fontSize:12, color: AppColors.textDark, fontWeight: FontWeight.w600), items: [DropdownMenuItem(value:'cafe', child: Text('Café', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value:'almoco', child: Text('Almoço', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value:'jantar', child: Text('Jantar', style: TextStyle(color: AppColors.textDark))), DropdownMenuItem(value:'lanche', child: Text('Lanches', style: TextStyle(color: AppColors.textDark)))], onChanged:(v)=>setState(()=>_mealType=v??_mealType)))]),
       const SizedBox(height: 8),
       Text('Vai para: $_mealLabel', style: const TextStyle(fontSize:11, color: AppColors.primary, fontWeight: FontWeight.w600)), const SizedBox(height:8),
-      TextField(controller: widget.searchCtrl, decoration: InputDecoration(labelText: 'Buscar (pão francês)', prefixIcon: const Icon(Icons.search), suffixIcon: _loading? const SizedBox(width:16,height:16, child: Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth:2))):null, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), onChanged: _search),
+      TextField(controller: widget.searchCtrl, decoration: InputDecoration(labelText: 'Buscar (pão francês)', prefixIcon: const Icon(Icons.search), suffixIcon: _loading? const SizedBox(width:16,height:16, child: Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth:2))):null, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), onChanged: _onSearchChanged),
       if (_res.isNotEmpty) Container(margin: const EdgeInsets.only(top:8), constraints: const BoxConstraints(maxHeight:160), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12)), child: ListView.separated(shrinkWrap:true, itemCount:_res.length, separatorBuilder:(_,__)=>const Divider(height:1), itemBuilder:(_,i){final f=_res[i]; final sel=_sel?.id==f.id; return ListTile(dense:true, selected:sel, title: Text(f.nome, style: TextStyle(fontWeight: FontWeight.w600, color: sel? AppColors.primary:null)), subtitle: Text('${f.kcalPer100g.toStringAsFixed(0)} kcal/100g', style: const TextStyle(fontSize:11)), trailing: sel? const Icon(Icons.check_circle, color: AppColors.primary):null, onTap: ()=>setState(()=>_sel=f));})),
       if (_sel!=null) Container(margin: const EdgeInsets.only(top:12), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(12)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
         Text(_sel!.nome, style: const TextStyle(fontWeight: FontWeight.w700)), const SizedBox(height:6),
