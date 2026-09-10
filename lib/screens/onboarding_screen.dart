@@ -91,13 +91,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ]),
       );
 
+  String _paceLabel(String p) {
+    final sign = _goal == 'ganhar' ? '+' : _goal == 'perder' ? '-' : '';
+    switch (p) {
+      case 'leve': return 'Leve ${sign.isNotEmpty ? '(${sign}0,25kg/sem)' : '(manter peso)'}';
+      case 'moderado': return 'Moderado ${sign.isNotEmpty ? '(${sign}0,5kg/sem)' : '(manter peso)'}';
+      default: return 'Intenso ${sign.isNotEmpty ? '(${sign}1kg/sem)' : '(manter peso)'}';
+    }
+  }
+
   Widget _step4() => Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Ritmo Desejado', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           Text('Opcional, mas útil', style: AppText.small),
           const SizedBox(height: 16),
-          ...['leve', 'moderado', 'intenso'].map((p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: ChoiceChip(label: Text(p == 'leve' ? 'Leve (-0,25kg/sem)' : p == 'moderado' ? 'Moderado (-0,5kg/sem)' : 'Intenso (-1kg/sem)'), selected: _pace == p, onSelected: (_) => setState(() => _pace = p), selectedColor: AppColors.primary.withOpacity(0.15)))),
+          ...['leve', 'moderado', 'intenso'].map((p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: ChoiceChip(label: Text(_paceLabel(p)), selected: _pace == p, onSelected: (_) => setState(() => _pace = p), selectedColor: AppColors.primary.withOpacity(0.15)))),
+          const SizedBox(height: 8),
+          Text(_goal == 'ganhar' ? 'Seu objetivo aumenta a meta de calorias e proteínas para ganhar massa.' : _goal == 'perder' ? 'A meta diária fica abaixo do seu metabolismo basal.' : 'A meta diária mantém seu peso atual.', style: AppText.small),
         ]),
       );
 }

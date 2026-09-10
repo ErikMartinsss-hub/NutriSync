@@ -48,22 +48,36 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final todayEx = exercises.where((e) => e.dateKey == todayKey).toList();
     final exKcal = todayEx.fold<int>(0, (s, e) => s + e.kcal);
     final exMin = todayEx.fold<int>(0, (s, e) => s + e.minutes);
-    // meta diária calculada a partir do perfil (Mifflin-St Jeor + fator atividade)
+    // meta diária calculada a partir do perfil (Mifflin-St Jeor basal)
+    // perder: abaixo do basal; ganhar: acima do basal; manter: no basal
     var dailyGoal = 2458;
+    var protGoal = 123;
     if (profile != null) {
       final bmr = profile.gender == 'M'
           ? (10 * profile.weight + 6.25 * profile.height - 5 * profile.age + 5)
           : (10 * profile.weight + 6.25 * profile.height - 5 * profile.age - 161);
-      final factor = switch (profile.pace) {
-        'leve' => 1.375,
-        'intenso' => 1.725,
-        _ => 1.55,
+      final adj = switch (profile.pace) {
+        'leve' => 275,
+        'moderado' => 550,
+        _ => 1100,
       };
-      dailyGoal = (bmr * factor).round();
-      if (profile.goal == 'perder') dailyGoal -= 300;
-      if (profile.goal == 'ganhar') dailyGoal += 300;
+      switch (profile.goal) {
+        case 'perder':
+          dailyGoal = (bmr - adj).clamp(1200, 5000).toInt();
+        case 'ganhar':
+          dailyGoal = (bmr + adj).clamp(1200, 5000).toInt();
+        default:
+          dailyGoal = bmr.round();
+      }
+      protGoal = switch (profile.goal) {
+        'ganhar' => (profile.weight * 2.0).round(),
+        'perder' => (profile.weight * 1.8).round(),
+        _ => (profile.weight * 1.6).round(),
+      };
     }
-    // mocks de macros por enquanto - deriva de kcal (ex: 50% carb, 25% prot, 25% gordura)
+    final fatGoal = (dailyGoal * 0.25 / 9).round();
+    final carbGoal = ((dailyGoal - protGoal * 4 - fatGoal * 9) / 4).round();
+    // macros consumidas (50% carb, 25% prot, 25% gordura)
     final carbG = (totalKcal * 0.5 / 4).round();
     final protG = (totalKcal * 0.25 / 4).round();
     final fatG = (totalKcal * 0.25 / 9).round();
@@ -155,7 +169,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         const SizedBox(height: 12),
         CalorieCard(consumed: totalKcal, goal: dailyGoal, burned: exKcal),
         const SizedBox(height: 12),
-        MacrosCard(carb: (cur: carbG, goal: 308), fat: (cur: fatG, goal: 82), protein: (cur: protG, goal: 123)),
+        MacrosCard(carb: (cur: carbG, goal: carbGoal), fat: (cur: fatG, goal: fatGoal), protein: (cur: protG, goal: protGoal)),
         const SizedBox(height: 16),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text('Diário', style: AppText.value),
