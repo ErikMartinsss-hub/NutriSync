@@ -57,7 +57,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _biometricLogin() async {
     if (!await BiometricService.hasEnrolledBiometrics()) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nenhuma digital cadastrada. Cadastre uma digital nas Configurações do seu aparelho e tente de novo.')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Nenhuma digital cadastrada neste aparelho.'),
+          action: SnackBarAction(label: 'CONFIGURAR', onPressed: BiometricService.openEnrollSettings),
+          duration: const Duration(seconds: 6),
+        ));
+      }
       return;
     }
     setState(() => _loading = true);

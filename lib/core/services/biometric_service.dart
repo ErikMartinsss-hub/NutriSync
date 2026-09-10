@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
 class BiometricResult {
@@ -25,6 +26,14 @@ class BiometricService {
     } catch (_) {
       return false;
     }
+  }
+
+  static const _channel = MethodChannel('com.mamba.nutrisync/biometric');
+
+  static Future<void> openEnrollSettings() async {
+    try {
+      await _channel.invokeMethod('openBiometricEnroll');
+    } catch (_) {}
   }
 
   static Future<BiometricResult> authenticate() async {
