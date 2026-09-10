@@ -27,6 +27,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _checkSaved() async {
     final saved = await SavedCredentials.hasSaved();
+    if (mounted && saved) {
+      final creds = await SavedCredentials.read();
+      if (mounted && creds != null) {
+        _email.text = creds.email;
+        if (creds.password.isNotEmpty) _pass.text = creds.password;
+      }
+    }
     if (mounted) setState(() => _hasSaved = saved);
   }
 
@@ -49,8 +56,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _biometricLogin() async {
-    if (!await BiometricService.isAvailable()) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nenhuma digital cadastrada neste aparelho')));
+    if (!await BiometricService.hasEnrolledBiometrics()) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nenhuma digital cadastrada. Cadastre uma digital nas Configurações do seu aparelho e tente de novo.')));
       return;
     }
     setState(() => _loading = true);
@@ -58,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!authed) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Autenticação cancelada ou falhou')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Não foi possível usar a digital. Tente novamente.')));
       }
       return;
     }

@@ -11,6 +11,15 @@ class BiometricService {
     }
   }
 
+  static Future<bool> hasEnrolledBiometrics() async {
+    try {
+      final list = await _auth.getAvailableBiometrics();
+      return list.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<bool> authenticate() async {
     try {
       return await _auth.authenticate(
