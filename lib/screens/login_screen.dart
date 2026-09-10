@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/services/saved_credentials.dart';
 import '../design/tokens.dart';
 import '../features/auth/presentation/auth_provider.dart';
+import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -82,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     _input(controller: _pass, hint: 'Digite a sua senha', icon: Icons.lock_outline_rounded, obscure: _obscure, suffix: IconButton(icon: Icon(_obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: AppColors.textMid), onPressed: () => setState(() => _obscure = !_obscure)), validator: (v) => v != null && v.length >= 3 ? null : 'Mín 3 caracteres'),
                     const SizedBox(height: 8),
                     Row(children: [
-                      TextButton(onPressed: () {}, child: const Text('Esqueceu a senha?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 12))),
+                      TextButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())), child: const Text('Esqueceu a senha?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 12))),
                       const Spacer(),
                       Text('Salvar senha no app', style: TextStyle(fontSize: 12, color: AppColors.textMid, fontWeight: FontWeight.w600)),
                       Switch(value: _savePass, onChanged: (v) => setState(() => _savePass = v), activeTrackColor: AppColors.primary, activeThumbColor: Colors.white, inactiveThumbColor: AppColors.textMid),

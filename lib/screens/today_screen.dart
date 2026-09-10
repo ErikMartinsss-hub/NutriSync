@@ -21,6 +21,7 @@ import '../screens/exercise_log_screen.dart';
 import '../widgets/weight_card.dart';
 import '../widgets/exercise_card.dart';
 import 'add_meal_screen.dart';
+import 'change_password_screen.dart';
 import '../screens/nutrition_screen.dart';
 import '../screens/fasting_history_screen.dart';
 import '../features/history/presentation/history_page.dart';
@@ -290,6 +291,11 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             );
           }),
           const SizedBox(height: 8),
+          Consumer(builder: (context, ref, _) {
+            final usesPwd = ref.read(authProvider.notifier).usesPasswordAuth;
+            if (!usesPwd) return const SizedBox.shrink();
+            return ListTile(leading: const Icon(Icons.lock_reset_rounded), title: const Text('Alterar senha'), onTap: () { Navigator.pop(ctx); Navigator.push(ctx, MaterialPageRoute(builder: (_) => const ChangePasswordScreen())); });
+          }),
           ListTile(leading: const Icon(Icons.history_rounded), title: const Text('Histórico'), onTap: () { Navigator.pop(ctx); setState(() => _nav = 3); }),
           ListTile(leading: const Icon(Icons.logout_rounded, color: Colors.red), title: const Text('Sair da conta', style: TextStyle(color: Colors.red)), onTap: () { Navigator.pop(ctx); ref.read(authProvider.notifier).logout(); }),
           const SizedBox(height: 16),

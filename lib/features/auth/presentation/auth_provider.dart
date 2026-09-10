@@ -148,6 +148,55 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  bool get usesPasswordAuth => _auth.currentUser?.providerData.any((p) => p.providerId == 'password') ?? false;
+
+  Future<String?> sendPasswordReset(String email) async {
+    try {
+      log('[AUTH] Enviando reset de senha: $email');
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      AnalyticsService.logEvent('password_reset_sent');
+      return null;
+    } on FirebaseAuthException catch (e) {
+      log('[AUTH] Reset de senha ERRO: ${e.code} - ${e.message}');
+      return _firebaseAuthError(e.code);
+    } catch (e) {
+      return 'Sem conexão com a internet.';
+    }
+  }
+
+  Future<String?> changePassword(String currentPassword, String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) return 'Você precisa estar logado.';
+    final email = user.email;
+    if (email == null) return 'Não foi possível identificar a conta.';
+    try {
+      final cred = EmailAuthProvider.credential(email: email, password: currentPassword);
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPassword);
+      log('[AUTH] Senha alterada para: $email');
+      AnalyticsService.logEvent('password_changed');
+      final saved = await SavedCredentials.read();
+      if (saved != null && saved.email == email) {
+        await SavedCredentials.save(email, password: newPassword);
+      }
+      return null;
+    } on FirebaseAuthException catch (e) {
+      log('[AUTH] Alterar senha ERRO: ${e.code} - ${e.message}');
+      switch (e.code) {
+        case 'wrong-password':
+          return 'Senha atual incorreta.';
+        case 'weak-password':
+          return 'A nova senha deve ter pelo menos 6 caracteres.';
+        case 'requires-recent-login':
+          return 'Faça login novamente para alterar a senha.';
+        default:
+          return _firebaseAuthError(e.code);
+      }
+    } catch (e) {
+      return 'Sem conexão com a internet.';
+    }
+  }
+
   Future<void> logout() async {
     try { await GoogleSignIn.instance.signOut(); } catch (_) {}
     try { await _auth.signOut(); } catch (_) {}
