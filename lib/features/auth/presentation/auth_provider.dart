@@ -125,7 +125,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
       AnalyticsService.logEvent('login_google');
       state = AuthState(isLoggedIn: true, email: user?.email ?? account.email, isLoading: false, firebaseUser: user);
       return true;
+    } on GoogleSignInException catch (e) {
+      log('[AUTH] GoogleSignIn ERRO code=${e.code} desc=${e.description} details=${e.details}');
+      return false;
+    } on FirebaseAuthException catch (e) {
+      log('[AUTH] FirebaseAuth Google ERRO code=${e.code} message=${e.message}');
+      return false;
     } catch (e) {
+      log('[AUTH] Google login ERRO generico: $e');
       return false;
     }
   }
