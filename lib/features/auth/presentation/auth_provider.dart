@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/services/analytics_service.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
 
@@ -60,6 +61,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
       await prefs.setString('email', email);
+      AnalyticsService.setUserId(email);
+      AnalyticsService.logEvent('login');
       return true;
     } on FirebaseAuthException catch (e) {
       log('[AUTH] Login Firebase ERRO: ${e.code} - ${e.message}');
@@ -81,6 +84,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
       await prefs.setString('email', email);
+      AnalyticsService.setUserId(email);
+      AnalyticsService.logEvent('sign_up');
       return true;
     } on FirebaseAuthException catch (e) {
       log('[AUTH] Registro Firebase ERRO: ${e.code} - ${e.message}');
@@ -116,6 +121,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
       await prefs.setString('email', user?.email ?? account.email);
+      AnalyticsService.setUserId(user?.email ?? account.email);
+      AnalyticsService.logEvent('login_google');
       state = AuthState(isLoggedIn: true, email: user?.email ?? account.email, isLoading: false, firebaseUser: user);
       return true;
     } catch (e) {
@@ -128,6 +135,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try { await _auth.signOut(); } catch (_) {}
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    AnalyticsService.logEvent('logout');
+    AnalyticsService.setUserId(null);
     state = const AuthState(isLoggedIn: false, email: null, isLoading: false);
   }
 }

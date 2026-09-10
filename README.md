@@ -2,7 +2,7 @@
 
 Aplicativo de jejum intermitente com registro de calorias e exercicios — desafio tecnico da Mamba Growth (Mobile Apps Division).
 
-Stack: Flutter 3.47 + Dart 3.13 · Arquitetura: Clean + Riverpod · Persistencia: Hive · Auth: Firebase Auth (email/senha + Google) · Notificacoes: flutter_local_notifications · Dados de alimentos: API TACO
+Stack: Flutter 3.47 + Dart 3.13 · Arquitetura: Clean + Riverpod · Persistencia: Hive · Auth: Firebase Auth (email/senha + Google) · Notificacoes: flutter_local_notifications · Dados de alimentos: API TACO · Analytics/Crashlytics: Firebase · Feature flags: locais via Hive (hibernaveis remotamente)
 
 ---
 
@@ -12,6 +12,14 @@ Stack: Flutter 3.47 + Dart 3.13 · Arquitetura: Clean + Riverpod · Persistencia
 - Flutter 3.22+ (`flutter doctor` deve passar no Android toolchain)
 - Android SDK 34+ / emulador ou device fisico
 - `google-services.json` do Firebase (projeto `nutrisync-18da1`) em `android/app/` (nao versionado — fica no `.gitignore`, gere o seu no Firebase console)
+
+### CI (GitHub Actions)
+O workflow roda `analyze` + `test` e, se o secret `GOOGLE_SERVICES_JSON` estiver cadastrado no repo (base64 do arquivo `google-services.json`), tambem gera os APKs release split-per-abi como artefato. Sem o secret, o job de build e simplesmente pulado. Para configurar:
+```bash
+# local
+base64 -w0 android/app/google-services.json   # imprime a string
+```
+Depois: Settings > Secrets > Actions > novo secret `GOOGLE_SERVICES_JSON` com o valor impresso.
 
 ### Rodar em debug
 ```bash
@@ -172,7 +180,7 @@ Permissoes no `AndroidManifest.xml`:
 - Timer com `CircularProgressIndicator`, `HH:MM:SS` decorrido/restante e percentual.
 - Chips para os protocolos, desabilitados durante jejum ativo.
 - Navegacao: TodayScreen com FloatingActionButton para adicionar refeicao e BottomNavigationBar (Hoje/Nutricao/Jejum/Mais).
-- Dark mode via `ThemeMode.system`.
+- Dark mode: toggle Claro/Escuro/Sistema no topo da barra de titulo + seletor completo no menu "Mais", com preferencia persistida em Hive.
 
 ---
 
@@ -183,6 +191,7 @@ Permissoes no `AndroidManifest.xml`:
 | `flutter_riverpod` | Estado (StateNotifier/Provider) |
 | `hive_ce` + `hive_flutter` | Persistencia local |
 | `firebase_core`, `firebase_auth`, `google_sign_in` | Autenticacao |
+| `firebase_analytics`, `firebase_crashlytics` | Analytics, crash reports |
 | `shared_preferences` | Sessao (fallback demo) |
 | `flutter_local_notifications` + `timezone` | Notificacoes agendadas |
 | `fl_chart` | Graficos (rosca/barras) |
@@ -190,7 +199,7 @@ Permissoes no `AndroidManifest.xml`:
 | `uuid` | IDs |
 | `http` | Cliente da API TACO |
 
-Icone do app gerado com `flutter_launcher_icons` a partir de `assets/icon.png` (adaptive icon).
+Icone do app gerado com `flutter_launcher_icons` a partir de `assets/icon_foreground.png` (adaptive icon).
 
 ---
 
@@ -206,7 +215,7 @@ Icone do app gerado com `flutter_launcher_icons` a partir de `assets/icon.png` (
 
 ## O que melhoraria com mais tempo
 
-- Firebase Analytics + Crashlytics + Remote Config (feature flags)
+- Firebase Remote Config como fonte centralizada das feature flags
 - Edicao retroativa de jejum (corrigir data de inicio e fim)
 - Sincronizacao em nuvem (Firestore) com merge offline para online
 - Exportacao CSV e graficos mensais

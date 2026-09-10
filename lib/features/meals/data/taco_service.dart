@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../core/services/feature_flags.dart';
 
 class TacoFood {
   final int id;
@@ -72,6 +73,9 @@ class TacoService {
   ];
 
   static Future<List<TacoFood>> fetchAll() async {
+    if (!FeatureFlags.isEnabled('taco_online_search')) {
+      return _mock;
+    }
     if (_cache != null && _cacheTime != null && DateTime.now().difference(_cacheTime!).inMinutes < 10) {
       return _cache!;
     }

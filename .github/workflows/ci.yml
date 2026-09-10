@@ -31,6 +31,7 @@ jobs:
   build-apk:
     name: Build APK
     needs: analyze-test
+    if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,6 +44,14 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Restore google-services.json
+        shell: bash
+        run: |
+          mkdir -p android/app
+          echo "$GOOGLE_SERVICES_JSON" | base64 -d > android/app/google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
       - name: Build release APK
         run: flutter build apk --release --split-per-abi

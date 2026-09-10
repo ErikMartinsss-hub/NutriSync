@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../auth/presentation/auth_provider.dart';
 import '../data/fasting_protocol.dart';
@@ -145,6 +146,7 @@ class FastingNotifier extends StateNotifier<FastingState> {
       body: 'Seu jejum ${protocol.name} terminou.',
       scheduledDate: now.add(Duration(minutes: protocol.fastingMinutes)),
     );
+    AnalyticsService.logEvent('fasting_start', {'protocol': protocol.name, 'minutes': protocol.fastingMinutes});
   }
 
   Future<void> pauseFasting() async {
@@ -156,6 +158,7 @@ class FastingNotifier extends StateNotifier<FastingState> {
     try { await NotificationService.cancel(c.id.hashCode); } catch (_) {}
     // força rebuild imediato com now congelado para não continuar contando
     state = state.copyWith(current: paused, now: DateTime.now());
+    AnalyticsService.logEvent('fasting_paused');
     // debug
     // ignore: avoid_print
     print('[MAMBA] pause: elapsed=$elapsed status=${paused.status}');
@@ -201,6 +204,7 @@ class FastingNotifier extends StateNotifier<FastingState> {
     }
     await repo.saveCurrentSession(null);
     state = state.copyWith(clearCurrent: true, history: repo.getHistory());
+    AnalyticsService.logEvent(complete ? 'fasting_completed' : 'fasting_cancelled', {'protocol': c.protocolName});
     if (complete) {
       await NotificationService.showInstant(id: 999, title: 'Jejum encerrado', body: 'Jejum finalizado com sucesso!');
     }

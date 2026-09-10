@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../auth/presentation/auth_provider.dart';
 import '../data/meal.dart';
 import '../data/meal_repository.dart';
@@ -34,6 +35,7 @@ class MealNotifier extends StateNotifier<List<Meal>> {
     );
     await repo.add(meal);
     _refresh();
+    AnalyticsService.logEvent('meal_added', {'calories': calories, 'meal_type': mealType});
   }
 
   Future<void> updateMeal(String id, String name, int calories, {String? mealType}) async {
@@ -48,11 +50,13 @@ class MealNotifier extends StateNotifier<List<Meal>> {
     );
     await repo.update(updated);
     _refresh();
+    AnalyticsService.logEvent('meal_updated', {'calories': calories, 'meal_type': mealType ?? ''});
   }
 
   Future<void> deleteMeal(String id) async {
     await repo.delete(id);
     _refresh();
+    AnalyticsService.logEvent('meal_deleted');
   }
 
   List<Meal> mealsForDate(String dateKey) => state.where((m) => m.dateKey == dateKey).toList();
