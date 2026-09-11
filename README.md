@@ -121,7 +121,7 @@ int elapsedSeconds(DateTime now) {
 }
 ```
 
-Testei com kill + reopen, background prolongado e pause/resume. Como o Hive é a fonte da verdade, o estado nunca regride.
+Como o Hive é a fonte da verdade, o estado nunca regride.
 
 ---
 
