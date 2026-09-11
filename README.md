@@ -103,17 +103,15 @@ lib/
 
 ---
 
-## Timer — por que nao quebra em background
+## Timer — por que não quebra em background
 
-Esta e a parte mais importante do desafio. Um timer fragil reprovaria o teste.
+Essa é a parte mais importante do desafio: um timer frágil reprovaria o teste. A ideia é simples — **o app não confia no objeto `Timer`**. Tratei o Hive como a fonte da verdade:
 
-A estrategia e a seguinte:
-
-1. O app nao confia no objeto `Timer`: ao iniciar o jejum, grava `startTimeMs` (epoch) no Hive.
-2. `elapsedSeconds(now) = now - startTimeMs`, sempre recalculado. Ao fechar e reabrir o app ou voltar do background, o `FastingNotifier` le o valor do Hive e o progresso ja esta correto.
-3. No pause, salva `elapsedSecondsOnPause` e `status=paused`, e cancela a notificacao agendada. No resume, recalcula `newStart = now - elapsedOnPause` e reagenda a notificacao com o tempo restante.
-4. O `Timer.periodic(1s)` existe apenas para atualizar o relogio na tela e detectar a conclusao, movendo o jejum para o historico automaticamente.
-5. Notificacoes: `showInstant` ao iniciar/encerrar e `zonedSchedule` para o termino (`exactAllowWhileIdle`, toca mesmo em modo Doze). Ao pausar ou cancelar, a notificacao e cancelada.
+1. Ao **iniciar** o jejum, gravo `startTimeMs` (epoch time) no Hive.
+2. O tempo decorrido é sempre recalculado (`elapsedSeconds(now) = now - startTimeMs`). Se o app for fechado e reaberto — ou voltar do background — o `FastingNotifier` lê o valor do Hive e o progresso já está correto.
+3. Ao **pausar**, salvo `elapsedSecondsOnPause` e `status = paused`, e cancelo a notificação agendada. Ao **retomar**, recalculo `newStart = now - elapsedOnPause` e reagendo a notificação com o tempo restante.
+4. O `Timer.periodic(1s)` existe só para atualizar o relógio na tela e detectar a conclusão, movendo o jejum para o histórico automaticamente.
+5. **Notificações**: `showInstant` ao iniciar/encerrar e `zonedSchedule` para o término (`exactAllowWhileIdle`, toca até em modo Doze). Pausar ou cancelar cancela a notificação.
 
 ```dart
 // elapsed real — sobrevive ao kill do processo
@@ -123,7 +121,7 @@ int elapsedSeconds(DateTime now) {
 }
 ```
 
-Testado com kill + reopen, background prolongado e pause/resume. O Hive e a fonte da verdade, o estado nunca regride.
+Testei com kill + reopen, background prolongado e pause/resume. Como o Hive é a fonte da verdade, o estado nunca regride.
 
 ---
 
