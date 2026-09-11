@@ -1,6 +1,6 @@
 # NutriSync
 
-Aplicativo de jejum intermitente com registro de calorias e exercicios — desafio tecnico da Mamba Growth (Mobile Apps Division).
+Aplicativo de jejum intermitente com registro de calorias e exercicios.
 
 Stack: Flutter 3.47 + Dart 3.13 · Arquitetura: Clean + Riverpod · Persistencia: Hive · Auth: Firebase Auth (email/senha + Google) · Notificacoes: flutter_local_notifications · Dados de alimentos: API TACO · Analytics/Crashlytics: Firebase · Feature flags: locais via Hive (hibernaveis remotamente)
 
