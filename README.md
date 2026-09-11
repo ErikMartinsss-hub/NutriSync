@@ -234,8 +234,8 @@ Icone do app gerado com `flutter_launcher_icons` a partir de `assets/icon_foregr
 Cerca de 12 horas distribuídas: scaffold, arquitetura, timer robusto, Firebase Auth, API TACO, refeicoes/peso/exercicio, historico/grafico, UI/design system, README, testes e build.
 
 ---
+##
 
-## Entregaveis
 
 - Repo: https://github.com/ErikMartinsss-hub/NutriSync
 - TACO API: https://github.com/ErikMartinsss-hub/mamba-taco-api (deploy: https://mamba-taco-api.onrender.com)
