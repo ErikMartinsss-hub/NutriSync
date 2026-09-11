@@ -241,4 +241,4 @@ Cerca de 12 horas distribuídas: scaffold, arquitetura, timer robusto, Firebase 
 - TACO API: https://github.com/ErikMartinsss-hub/mamba-taco-api (deploy: https://mamba-taco-api.onrender.com)
 - APK: `build/app/outputs/flutter-apk/app-release.apk`
 
-Feito para a Mamba Growth.
+
