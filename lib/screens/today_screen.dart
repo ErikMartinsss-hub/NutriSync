@@ -297,11 +297,49 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             return ListTile(leading: const Icon(Icons.lock_reset_rounded), title: const Text('Alterar senha'), onTap: () { Navigator.pop(ctx); Navigator.push(ctx, MaterialPageRoute(builder: (_) => const ChangePasswordScreen())); });
           }),
           ListTile(leading: const Icon(Icons.history_rounded), title: const Text('Histórico'), onTap: () { Navigator.pop(ctx); setState(() => _nav = 3); }),
+          ListTile(leading: const Icon(Icons.delete_forever_rounded, color: Colors.red), title: const Text('Excluir conta', style: TextStyle(color: Colors.red)), onTap: () { Navigator.pop(ctx); _confirmDeleteAccount(ctx); }),
           ListTile(leading: const Icon(Icons.logout_rounded, color: Colors.red), title: const Text('Sair da conta', style: TextStyle(color: Colors.red)), onTap: () { Navigator.pop(ctx); ref.read(authProvider.notifier).logout(); }),
           const SizedBox(height: 16),
         ]),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext ctx) async {
+    final usesPwd = ref.read(authProvider.notifier).usesPasswordAuth;
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: ctx,
+      builder: (dctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        title: const Text('Excluir conta?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Todos os dados deste aplicativo no aparelho serão apagados permanentemente. Essa ação não pode ser desfeita.', style: TextStyle(fontSize: 13)),
+          if (usesPwd) ...[
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              decoration: InputDecoration(hintText: 'Confirme sua senha', filled: true, fillColor: AppColors.bg, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
+            ),
+          ],
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dctx, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(dctx, true), style: FilledButton.styleFrom(backgroundColor: Colors.red), child: const Text('Excluir')),
+        ],
+      ),
+    );
+    if (confirmed != true) {
+      controller.dispose();
+      return;
+    }
+    final err = await ref.read(authProvider.notifier).deleteAccount(usesPwd ? controller.text : null);
+    controller.dispose();
+    if (!ctx.mounted) return;
+    if (err != null) {
+      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(err)));
+    }
   }
 
   Widget _mealList(List<Meal> list) => Column(

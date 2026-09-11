@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/saved_credentials.dart';
@@ -195,6 +196,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       return 'Sem conexão com a internet.';
     }
+  }
+
+  Future<String?> deleteAccount(String? currentPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) return 'Você precisa estar logado.';
+    final email = user.email;
+    try {
+      if (currentPassword != null && currentPassword.isNotEmpty && email != null) {
+        await user.reauthenticateWithCredential(EmailAuthProvider.credential(email: email, password: currentPassword));
+      }
+      await user.delete();
+      log('[AUTH] Conta excluída: $email');
+    } on FirebaseAuthException catch (e) {
+      log('[AUTH] Excluir conta ERRO: ${e.code} - ${e.message}');
+      if (e.code == 'requires-recent-login') {
+        return 'Por segurança, faça logout e entre novamente antes de excluir a conta.';
+      }
+      if (e.code == 'wrong-password') return 'Senha atual incorreta.';
+      return _firebaseAuthError(e.code);
+    } catch (e) {
+      return 'Sem conexão com a internet.';
+    }
+    try { await Hive.box('mamba_box').clear(); } catch (_) {}
+    try { await Hive.box('mamba_settings').clear(); } catch (_) {}
+    try { (await SharedPreferences.getInstance()).clear(); } catch (_) {}
+    await SavedCredentials.clear();
+    AnalyticsService.logEvent('account_deleted');
+    AnalyticsService.setUserId(null);
+    state = const AuthState(isLoggedIn: false, email: null, isLoading: false);
+    return null;
   }
 
   Future<void> logout() async {
