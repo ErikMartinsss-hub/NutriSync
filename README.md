@@ -231,7 +231,7 @@ Icone do app gerado com `flutter_launcher_icons` a partir de `assets/icon_foregr
 
 ## Tempo gasto
 
-Cerca de 12 horas distribuídas: scaffold, arquitetura, timer robusto, Firebase Auth, API TACO, refeicoes/peso/exercicio, historico/grafico, UI/design system, README, testes e build.
+Cerca de 18 horas distribuídas: scaffold, arquitetura, timer robusto, Firebase Auth, API TACO, refeicoes/peso/exercicio, historico/grafico, UI/design system, README, testes e build.
 
 ---
 ##
